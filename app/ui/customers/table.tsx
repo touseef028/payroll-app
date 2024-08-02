@@ -2,14 +2,14 @@ import Image from 'next/image';
 import { lusitana } from '@/app/ui/fonts';
 import Search from '@/app/ui/search';
 import {
-  CustomersTableType,
-  FormattedCustomersTable,
+  EmployeesTableType,
+  FormattedEmployeesTable,
 } from '@/app/lib/definitions';
 
-export default async function CustomersTable({
+export default async function EmployeesTable({
   employees,
 }: {
-  employees: FormattedCustomersTable[];
+  employees: FormattedEmployeesTable[];
 }) {
   return (
     <div className="w-full">

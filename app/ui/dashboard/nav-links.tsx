@@ -12,8 +12,8 @@ import clsx from 'clsx';
 // Define the links array
 const links = [
   { name: 'Home', href: '/', icon: HomeIcon },
-  { name: 'Invoices', href: '/invoices', icon: DocumentDuplicateIcon },
-  { name: 'Employees', href: '/employees', icon: UserGroupIcon },
+  { name: 'Invoices', href: '/dashboard/invoices', icon: DocumentDuplicateIcon },
+  { name: 'Employees', href: '/dashboard/employees', icon: UserGroupIcon },
 ];
 
 export default function NavLinks() {

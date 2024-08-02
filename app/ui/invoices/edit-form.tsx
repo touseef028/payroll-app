@@ -1,6 +1,6 @@
 'use client';
 
-import { CustomerField, InvoiceForm } from '@/app/lib/definitions';
+import { EmployeeField, InvoiceForm } from '@/app/lib/definitions';
 import {
   CheckIcon,
   ClockIcon,
@@ -15,12 +15,12 @@ export default function EditInvoiceForm({
   employees,
 }: {
   invoice: InvoiceForm;
-  employees: CustomerField[];
+  employees: EmployeeField[];
 }) {
   return (
     <form>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* Customer Name */}
+        {/* Employee Name */}
         <div className="mb-4">
           <label htmlFor="employee" className="mb-2 block text-sm font-medium">
             Choose employee
@@ -28,9 +28,9 @@ export default function EditInvoiceForm({
           <div className="relative">
             <select
               id="employee"
-              name="customerId"
+              name="employeeId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue={invoice.customer_id}
+              defaultValue={invoice.employee_id}
             >
               <option value="" disabled>
                 Select a employee

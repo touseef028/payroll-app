@@ -1,4 +1,4 @@
-import { CustomerField } from '@/app/lib/definitions';
+import { EmployeeField } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
   CheckIcon,
@@ -8,11 +8,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 
-export default function Form({ employees }: { employees: CustomerField[] }) {
+export default function Form({ employees }: { employees: EmployeeField[] }) {
   return (
     <form>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* Customer Name */}
+        {/* Employee Name */}
         <div className="mb-4">
           <label htmlFor="employee" className="mb-2 block text-sm font-medium">
             Choose employee
@@ -20,7 +20,7 @@ export default function Form({ employees }: { employees: CustomerField[] }) {
           <div className="relative">
             <select
               id="employee"
-              name="customerId"
+              name="employeeId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               defaultValue=""
             >

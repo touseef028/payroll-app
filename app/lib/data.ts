@@ -1,7 +1,7 @@
 import { sql } from '@vercel/postgres';
 import {
-  CustomerField,
-  CustomersTableType,
+  EmployeeField,
+  EmployeesTableType,
   InvoiceForm,
   InvoicesTable,
   LatestInvoiceRaw,
@@ -33,7 +33,7 @@ export async function fetchLatestInvoices() {
     const data = await sql<LatestInvoiceRaw>`
       SELECT invoices.amount, employees.name, employees.image_url, employees.email, invoices.id
       FROM invoices
-      JOIN employees ON invoices.customer_id = employees.id
+      JOIN employees ON invoices.employee_id = employees.id
       ORDER BY invoices.date DESC
       LIMIT 5`;
 
@@ -54,7 +54,7 @@ export async function fetchCardData() {
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM employees`;
+    const employeeCountPromise = sql`SELECT COUNT(*) FROM employees`;
     const invoiceStatusPromise = sql`SELECT
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
@@ -62,17 +62,17 @@ export async function fetchCardData() {
 
     const data = await Promise.all([
       invoiceCountPromise,
-      customerCountPromise,
+      employeeCountPromise,
       invoiceStatusPromise,
     ]);
 
     const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-    const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
+    const numberOfEmployees = Number(data[1].rows[0].count ?? '0');
     const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
     const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
 
     return {
-      numberOfCustomers,
+      numberOfEmployees,
       numberOfInvoices,
       totalPaidInvoices,
       totalPendingInvoices,
@@ -101,7 +101,7 @@ export async function fetchFilteredInvoices(
         employees.email,
         employees.image_url
       FROM invoices
-      JOIN employees ON invoices.customer_id = employees.id
+      JOIN employees ON invoices.employee_id = employees.id
       WHERE
         employees.name ILIKE ${`%${query}%`} OR
         employees.email ILIKE ${`%${query}%`} OR
@@ -123,7 +123,7 @@ export async function fetchInvoicesPages(query: string) {
   try {
     const count = await sql`SELECT COUNT(*)
     FROM invoices
-    JOIN employees ON invoices.customer_id = employees.id
+    JOIN employees ON invoices.employee_id = employees.id
     WHERE
       employees.name ILIKE ${`%${query}%`} OR
       employees.email ILIKE ${`%${query}%`} OR
@@ -145,7 +145,7 @@ export async function fetchInvoiceById(id: string) {
     const data = await sql<InvoiceForm>`
       SELECT
         invoices.id,
-        invoices.customer_id,
+        invoices.employee_id,
         invoices.amount,
         invoices.status
       FROM invoices
@@ -165,9 +165,9 @@ export async function fetchInvoiceById(id: string) {
   }
 }
 
-export async function fetchCustomers() {
+export async function fetchEmployees() {
   try {
-    const data = await sql<CustomerField>`
+    const data = await sql<EmployeeField>`
       SELECT
         id,
         name
@@ -183,9 +183,9 @@ export async function fetchCustomers() {
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+export async function fetchFilteredEmployees(query: string) {
   try {
-    const data = await sql<CustomersTableType>`
+    const data = await sql<EmployeesTableType>`
 		SELECT
 		  employees.id,
 		  employees.name,
@@ -195,7 +195,7 @@ export async function fetchFilteredCustomers(query: string) {
 		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
 		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
 		FROM employees
-		LEFT JOIN invoices ON employees.id = invoices.customer_id
+		LEFT JOIN invoices ON employees.id = invoices.employee_id
 		WHERE
 		  employees.name ILIKE ${`%${query}%`} OR
         employees.email ILIKE ${`%${query}%`}
