@@ -5,6 +5,7 @@ import {
   CheckIcon,
   ClockIcon,
   CurrencyPoundIcon,
+  HandThumbDownIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -50,10 +51,96 @@ export default function EditInvoiceForm({
           </div>
         </div>
 
-        {/* Invoice Amount */}
+        
+
+        {/* Invoice Day Time Hours Amount */}
         <div className="mb-4">
           <label htmlFor="amount" className="mb-2 block text-sm font-medium">
-            Choose an amount
+            Daytime Hours
+          </label>
+          <div className="relative mt-2 rounded-md">
+            <div className="relative">
+              <input
+                id="day_hrs_amount"
+                name="day_hrs_amount"
+                type="number"
+                step="0.01"
+                defaultValue={invoice.day_hrs_amount}
+                placeholder="Enter number of hours"
+                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              />
+              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+            Evening Hours
+          </label>
+          <div className="relative mt-2 rounded-md">
+            <div className="relative">
+              <input
+                id="eve_hrs_amount"
+                name="eve_hrs_amount"
+                type="number"
+                step="0.01"
+                defaultValue={invoice.eve_hrs_amount}
+                placeholder="Enter number of hours"
+                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              />
+
+              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+            Days
+          </label>
+          <div className="relative mt-2 rounded-md">
+            <div className="relative">
+              <input
+                id="days"
+                name="days"
+                type="number"
+                step="0.01"
+                defaultValue={invoice.days}
+                placeholder="Enter number of days worked"
+                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              />
+
+              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+            Meetings
+          </label>
+          <div className="relative mt-2 rounded-md">
+            <div className="relative">
+              <input
+                id="meetings"
+                name="meetings"
+                type="number"
+                step="0.01"
+                defaultValue={invoice.meetings}
+                placeholder="Enter number of meetings attended"
+                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              />
+
+              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+            </div>
+          </div>
+        </div>
+
+        {/* Invoice Total Amount */}
+        <div className="mb-4">
+          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+            Total Amount
           </label>
           <div className="relative mt-2 rounded-md">
             <div className="relative">
@@ -63,7 +150,7 @@ export default function EditInvoiceForm({
                 type="number"
                 step="0.01"
                 defaultValue={invoice.amount}
-                placeholder="Enter GBP amount"
+                placeholder="Enter number of hours"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               />
               <CurrencyPoundIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
@@ -124,7 +211,7 @@ export default function EditInvoiceForm({
                   htmlFor="rejected"
                   className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"
                 >
-                  Rejected <CheckIcon className="h-4 w-4" />
+                  Rejected <HandThumbDownIcon className="h-4 w-4" />
                 </label>
               </div>
             </div>

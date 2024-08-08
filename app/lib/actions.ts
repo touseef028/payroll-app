@@ -8,6 +8,10 @@ import { redirect } from 'next/navigation';
 const FormSchema = z.object({
   id: z.string(),
   employeeId: z.string(),
+  day_hrs_amount: z.coerce.number(),
+  eve_hrs_amount: z.coerce.number(),
+  days: z.coerce.number(),
+  meetings: z.coerce.number(),
   amount: z.coerce.number(),
   status: z.enum(['pending', 'approved', 'rejected']),
   date: z.string(),
@@ -17,18 +21,26 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(formData: FormData) {
   console.log("formData", formData);
-  const { employeeId, amount, status } = CreateInvoice.parse({
+  const { employeeId, amount, day_hrs_amount, eve_hrs_amount, days, meetings,  status } = CreateInvoice.parse({
     employeeId: formData.get("employeeId"),
     amount: formData.get("amount"),
     status: formData.get("status"),
+    day_hrs_amount: formData.get("day_hrs_amount"),
+    eve_hrs_amount: formData.get("eve_hrs_amount"),
+    days: formData.get("days"),
+    meetings: formData.get("meetings"),
   });
   const amountInCents = amount * 100;
+  const day_hrs_amountInCents = day_hrs_amount * 100;
+  const eve_hrs_amountInCents = eve_hrs_amount * 100;
+  const daysInCents = days * 100;
+  const meetingsInCents = meetings * 100;
   const date = new Date().toISOString().split('T')[0];
  
   try {
     await sql`
-      INSERT INTO invoices (employee_id, amount, status, date)
-      VALUES (${employeeId}, ${amountInCents}, ${status}, ${date})
+      INSERT INTO invoices (employee_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date)
+      VALUES (${employeeId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date})
     `;
     console.log("success");
   } catch (error) {
@@ -45,19 +57,27 @@ export async function createInvoice(formData: FormData) {
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function updateInvoice(id: string, formData: FormData) {
-    const { employeeId, amount, status } = UpdateInvoice.parse({
+    const { employeeId, amount, day_hrs_amount, eve_hrs_amount, days, meetings,  status } = UpdateInvoice.parse({
       employeeId: formData.get('employeeId'),
       amount: formData.get('amount'),
       status: formData.get('status'),
+      day_hrs_amount: formData.get("day_hrs_amount"),
+      eve_hrs_amount: formData.get("eve_hrs_amount"),
+      days: formData.get("days"),
+      meetings: formData.get("meetings"),
     });
    
     const amountInCents = amount * 100;
+    const day_hrs_amountInCents = day_hrs_amount * 100;
+    const eve_hrs_amountInCents = eve_hrs_amount * 100;
+    const daysInCents = days * 100;
+    const meetingsInCents = meetings * 100;
     const date = new Date().toISOString().split('T')[0];
    
     try {
       await sql`
           UPDATE invoices
-          SET employee_id = ${employeeId}, amount = ${amountInCents}, status = ${status}
+          SET employee_id = ${employeeId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, date = ${date}
           WHERE id = ${id}
         `;
     } catch (error) {

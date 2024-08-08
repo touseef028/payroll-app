@@ -21,6 +21,10 @@ export type Invoice = {
   employee_id: string;
   amount: number;
   date: string;
+  day_hrs_amount: number;
+  eve_hrs_amount:number;
+  days:number;
+  meetings:number;
   // In TypeScript, this is called a string union type.
   // It means that the "status" property can only be one of the two strings: 'pending' or 'approved'.
   status: 'pending' | 'approved' | 'rejected';
@@ -51,6 +55,10 @@ export type InvoicesTable = {
   email: string;
   image_url: string;
   date: string;
+  day_hrs_amount: number;
+  eve_hrs_amount:number;
+  days:number;
+  meetings:number;
   amount: number;
   status: 'pending' | 'approved' | 'rejected';
 };
@@ -83,6 +91,10 @@ export type EmployeeField = {
 export type InvoiceForm = {
   id: string;
   employee_id: string;
+  day_hrs_amount: number;
+  eve_hrs_amount:number;
+  days:number;
+  meetings:number;
   amount: number;
   status: 'pending' | 'approved' | 'rejected';
 };

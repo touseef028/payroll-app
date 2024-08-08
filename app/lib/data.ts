@@ -147,7 +147,11 @@ export async function fetchInvoiceById(id: string) {
         invoices.id,
         invoices.employee_id,
         invoices.amount,
-        invoices.status
+        invoices.status,
+        invoices.day_hrs_amount,
+        invoices.eve_hrs_amount,
+        invoices.days,
+        invoices.meetings
       FROM invoices
       WHERE invoices.id = ${id};
     `;
@@ -156,6 +160,11 @@ export async function fetchInvoiceById(id: string) {
       ...invoice,
       // Convert amount from cents to dollars
       amount: invoice.amount / 100,
+      day_hrs_amount: invoice.day_hrs_amount / 100,
+      eve_hrs_amount: invoice.eve_hrs_amount / 100,
+      days: invoice.days / 100,
+      meetings: invoice.meetings / 100,
+      // Convert amount from cents to dollars
     }));
 
     return invoice[0];
