@@ -64,13 +64,13 @@ const invoices = [
   {
     employee_id: employees[4].id,
     amount: 3040,
-    status: 'paid',
+    status: 'approved',
     date: '2022-10-29',
   },
   {
     employee_id: employees[3].id,
     amount: 44800,
-    status: 'paid',
+    status: 'approved',
     date: '2023-09-10',
   },
   {
@@ -94,37 +94,37 @@ const invoices = [
   {
     employee_id: employees[3].id,
     amount: 32545,
-    status: 'paid',
+    status: 'approved',
     date: '2023-06-09',
   },
   {
     employee_id: employees[4].id,
     amount: 1250,
-    status: 'paid',
+    status: 'approved',
     date: '2023-06-17',
   },
   {
     employee_id: employees[5].id,
     amount: 8546,
-    status: 'paid',
+    status: 'approved',
     date: '2023-06-07',
   },
   {
     employee_id: employees[1].id,
     amount: 500,
-    status: 'paid',
+    status: 'approved',
     date: '2023-08-19',
   },
   {
     employee_id: employees[5].id,
     amount: 8945,
-    status: 'paid',
+    status: 'approved',
     date: '2023-06-03',
   },
   {
     employee_id: employees[2].id,
     amount: 1000,
-    status: 'paid',
+    status: 'approved',
     date: '2022-06-05',
   },
 ];

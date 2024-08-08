@@ -52,7 +52,7 @@ export default async function EmployeesTable({
                         <p className="font-medium">{employee.total_pending}</p>
                       </div>
                       <div className="flex w-1/2 flex-col">
-                        <p className="text-xs">Paid</p>
+                        <p className="text-xs">Approved</p>
                         <p className="font-medium">{employee.total_paid}</p>
                       </div>
                     </div>
@@ -78,7 +78,7 @@ export default async function EmployeesTable({
                       Total Pending
                     </th>
                     <th scope="col" className="px-4 py-5 font-medium">
-                      Total Paid
+                      Total Approved
                     </th>
                   </tr>
                 </thead>
