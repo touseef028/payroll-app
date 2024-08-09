@@ -98,3 +98,11 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'approved' | 'rejected';
 };
+
+export type Settings = {
+  [x: string]: any;
+  dayTimeRate: number;
+  eveRate: number;
+  dayRate: number;
+  meetingRate: number;
+};

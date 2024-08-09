@@ -5,6 +5,7 @@ import {
   InvoiceForm,
   InvoicesTable,
   LatestInvoiceRaw,
+  Settings,
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
@@ -222,5 +223,29 @@ export async function fetchFilteredEmployees(query: string) {
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch employee table.');
+  }
+
+
+}
+
+export async function fetchSettings() {
+  console.log('Fetching settings...');
+  try {
+    const data = await sql<Settings>`
+      SELECT settings.daytime_rate, settings.eve_rate, settings.day_rate, settings.meeting_rate 
+      FROM settings 
+      LIMIT 1
+    `;
+    const dbSettings = data.rows[0];
+    console.log('Fetching settings...', dbSettings);
+    return {
+      dayTimeRate: dbSettings.daytime_rate,
+      eveRate: dbSettings.eve_rate,
+      dayRate: dbSettings.day_rate,
+      meetingRate: dbSettings.meeting_rate,
+    }
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch settings.');
   }
 }

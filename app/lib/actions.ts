@@ -99,3 +99,19 @@ export async function updateInvoice(id: string, formData: FormData) {
     }
   }
 
+  export async function updateSettings(formData: FormData) {
+    const { dayTimeRate, eveRate, dayRate, meetingRate } = Object.fromEntries(formData);
+  
+    try {
+      await sql`
+        UPDATE settings
+        SET daytime_rate = ${dayTimeRate}, eve_rate = ${eveRate}, day_rate = ${dayRate}, meeting_rate = ${meetingRate}
+      `;
+    } catch (error) {
+      return { message: 'Database Error: Failed to Update Settings.' };
+    }
+  
+    revalidatePath('/dashboard/settings');
+    redirect('/dashboard/settings');
+  }
+

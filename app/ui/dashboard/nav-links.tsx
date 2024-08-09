@@ -3,6 +3,7 @@
 import {
   UserGroupIcon,
   HomeIcon,
+  CalculatorIcon,
   DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -14,6 +15,7 @@ const links = [
   { name: 'Home', href: '/', icon: HomeIcon },
   { name: 'Invoices', href: '/dashboard/invoices', icon: DocumentDuplicateIcon },
   { name: 'Employees', href: '/dashboard/employees', icon: UserGroupIcon },
+  { name: 'Settings', href: '/dashboard/settings', icon: CalculatorIcon },
 ];
 
 export default function NavLinks() {
