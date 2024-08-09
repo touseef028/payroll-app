@@ -42,7 +42,7 @@ export default async function InvoicesTable({
                 <div className="flex w-full items-center justify-between pt-4">
                   <div>
                     <p className="text-xl font-medium">
-                      {formatCurrency(invoice.amount)}
+                      {formatCurrency(invoice.day_hrs_amount + invoice.eve_hrs_amount + invoice.days + invoice.meetings)}
                     </p>
                     <p>{formatDateToLocal(invoice.date)}</p>
                   </div>

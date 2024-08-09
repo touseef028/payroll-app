@@ -229,7 +229,6 @@ export async function fetchFilteredEmployees(query: string) {
 }
 
 export async function fetchSettings() {
-  console.log('Fetching settings...');
   try {
     const data = await sql<Settings>`
       SELECT settings.daytime_rate, settings.eve_rate, settings.day_rate, settings.meeting_rate 
@@ -237,7 +236,6 @@ export async function fetchSettings() {
       LIMIT 1
     `;
     const dbSettings = data.rows[0];
-    console.log('Fetching settings...', dbSettings);
     return {
       dayTimeRate: dbSettings.daytime_rate,
       eveRate: dbSettings.eve_rate,

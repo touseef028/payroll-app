@@ -30,7 +30,8 @@ export async function createInvoice(formData: FormData) {
     days: formData.get("days"),
     meetings: formData.get("meetings"),
   });
-  const amountInCents = amount * 100;
+  const totalAmount = day_hrs_amount + eve_hrs_amount + days + meetings;
+  const amountInCents = totalAmount * 100;
   const day_hrs_amountInCents = day_hrs_amount * 100;
   const eve_hrs_amountInCents = eve_hrs_amount * 100;
   const daysInCents = days * 100;
@@ -66,8 +67,8 @@ export async function updateInvoice(id: string, formData: FormData) {
       days: formData.get("days"),
       meetings: formData.get("meetings"),
     });
-   
-    const amountInCents = amount * 100;
+    const totalAmount = day_hrs_amount + eve_hrs_amount + days + meetings;
+    const amountInCents = totalAmount * 100;
     const day_hrs_amountInCents = day_hrs_amount * 100;
     const eve_hrs_amountInCents = eve_hrs_amount * 100;
     const daysInCents = days * 100;
