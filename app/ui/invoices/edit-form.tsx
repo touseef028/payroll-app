@@ -1,6 +1,5 @@
 "use client";
-import { fetchSettings } from '@/app/lib/data';
-import { EmployeeField, InvoiceForm } from "@/app/lib/definitions";
+import { EmployeeField, InvoiceForm, Settings } from "@/app/lib/definitions";
 import {
   CheckIcon,
   ClockIcon,
@@ -11,59 +10,35 @@ import {
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { updateInvoice } from "@/app/lib/actions";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function EditInvoiceForm({
   invoice,
   employees,
+  settings,
 }: {
   invoice: InvoiceForm;
   employees: EmployeeField[];
+  settings: Settings | null;
 }) {
-  // const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
-  // const [dayHoursAmount, setDayHoursAmount] = useState(invoice.day_hrs_amount);
-  // const [eveHoursAmount, setEveHoursAmount] = useState(invoice.eve_hrs_amount);
-  // const [days, setDays] = useState(invoice.days);
-  // const [meetings, setMeetings] = useState(invoice.meetings);
-  // const [totalAmount, setTotalAmount] = useState(invoice.amount);
-
-  const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
-  const [settings, setSettings] = useState(null);
   const [totalAmount, setTotalAmount] = useState(invoice.amount);
 
-  useEffect(() => {
-  async function getSettings() {
-    try {
-      const fetchedSettings = await fetchSettings();
-      setSettings(fetchedSettings);
-    } catch (error) {
-      console.error('Error in getSettings:', error);
-      // Handle the error appropriately, e.g., set an error state
-    }
-  }
-  getSettings();
-  }, []);
+  const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+  if (!settings) return null;
+
+  const calculateTotalAmount = () => {
+    const newTotal =
+      invoice.day_hrs_amount * settings.dayTimeRate +
+      invoice.eve_hrs_amount * settings.eveRate +
+      invoice.days * settings.dayRate +
+      invoice.meetings * settings.meetingRate;
+    setTotalAmount(newTotal);
+  };
 
   useEffect(() => {
-    if (settings) {
-      const newTotal = 
-        (invoice.day_hrs_amount * settings.day_time_rate) +
-        (invoice.eve_hrs_amount * settings.eve_rate) +
-        (invoice.days * settings.day_rate) +
-        (invoice.meetings * settings.meeting_rate);
-      setTotalAmount(newTotal);
-    }
-  }, [settings, invoice.day_hrs_amount, invoice.eve_hrs_amount, invoice.days, invoice.meetings]);
+    if (settings) calculateTotalAmount();
+  }, [settings]);
 
-  // useEffect(() => {
-  //   const calculateTotalAmount = () => {
-  //     const total = dayHoursAmount + eveHoursAmount + days + meetings;
-  //     setTotalAmount(total);
-  //   };
-  //   calculateTotalAmount();
-  // }, [dayHoursAmount, eveHoursAmount, days, meetings]);
-
-  
   return (
     <form action={updateInvoiceWithId}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
@@ -105,6 +80,10 @@ export default function EditInvoiceForm({
                 type="number"
                 step="0.01"
                 defaultValue={invoice.day_hrs_amount}
+                onChange={(e) => {
+                  invoice.day_hrs_amount = Number(e.target.value);
+                  calculateTotalAmount();
+                }}
                 placeholder="Enter number of hours"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               />
@@ -125,6 +104,10 @@ export default function EditInvoiceForm({
                 type="number"
                 step="0.01"
                 defaultValue={invoice.eve_hrs_amount}
+                onChange={(e) => {
+                  invoice.eve_hrs_amount = Number(e.target.value);
+                  calculateTotalAmount();
+                }}
                 placeholder="Enter number of hours"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               />
@@ -146,6 +129,10 @@ export default function EditInvoiceForm({
                 type="number"
                 step="0.01"
                 defaultValue={invoice.days}
+                onChange={(e) => {
+                  invoice.days = Number(e.target.value);
+                  calculateTotalAmount();
+                }}
                 placeholder="Enter number of days worked"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               />
@@ -167,6 +154,10 @@ export default function EditInvoiceForm({
                 type="number"
                 step="0.01"
                 defaultValue={invoice.meetings}
+                onChange={(e) => {
+                  invoice.meetings = Number(e.target.value);
+                  calculateTotalAmount();
+                }}
                 placeholder="Enter number of meetings attended"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               />
