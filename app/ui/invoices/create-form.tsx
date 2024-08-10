@@ -12,6 +12,7 @@ import {
 import { Button } from '@/app/ui/button';
 import { createInvoice } from '@/app/lib/actions';
 import { useState, useEffect } from 'react';
+import SettingsForm from '../settings/settings-form';
 
 export default function CreateInvoiceForm({ employees }: { employees: EmployeeField[] }) {
   const [dayHoursAmount, setDayHoursAmount] = useState(0);
@@ -19,6 +20,8 @@ export default function CreateInvoiceForm({ employees }: { employees: EmployeeFi
   const [days, setDays] = useState(0);
   const [meetings, setMeetings] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+
+  // const rates = await SettingsForm();
 
   useEffect(() => {
     const calculateTotalAmount = () => {

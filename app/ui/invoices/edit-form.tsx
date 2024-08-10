@@ -1,5 +1,5 @@
 "use client";
-
+import { fetchSettings } from '@/app/lib/data';
 import { EmployeeField, InvoiceForm } from "@/app/lib/definitions";
 import {
   CheckIcon,
@@ -20,20 +20,48 @@ export default function EditInvoiceForm({
   invoice: InvoiceForm;
   employees: EmployeeField[];
 }) {
+  // const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+  // const [dayHoursAmount, setDayHoursAmount] = useState(invoice.day_hrs_amount);
+  // const [eveHoursAmount, setEveHoursAmount] = useState(invoice.eve_hrs_amount);
+  // const [days, setDays] = useState(invoice.days);
+  // const [meetings, setMeetings] = useState(invoice.meetings);
+  // const [totalAmount, setTotalAmount] = useState(invoice.amount);
+
   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
-  const [dayHoursAmount, setDayHoursAmount] = useState(invoice.day_hrs_amount);
-  const [eveHoursAmount, setEveHoursAmount] = useState(invoice.eve_hrs_amount);
-  const [days, setDays] = useState(invoice.days);
-  const [meetings, setMeetings] = useState(invoice.meetings);
+  const [settings, setSettings] = useState(null);
   const [totalAmount, setTotalAmount] = useState(invoice.amount);
 
   useEffect(() => {
-    const calculateTotalAmount = () => {
-      const total = dayHoursAmount + eveHoursAmount + days + meetings;
-      setTotalAmount(total);
-    };
-    calculateTotalAmount();
-  }, [dayHoursAmount, eveHoursAmount, days, meetings]);
+  async function getSettings() {
+    try {
+      const fetchedSettings = await fetchSettings();
+      setSettings(fetchedSettings);
+    } catch (error) {
+      console.error('Error in getSettings:', error);
+      // Handle the error appropriately, e.g., set an error state
+    }
+  }
+  getSettings();
+  }, []);
+
+  useEffect(() => {
+    if (settings) {
+      const newTotal = 
+        (invoice.day_hrs_amount * settings.day_time_rate) +
+        (invoice.eve_hrs_amount * settings.eve_rate) +
+        (invoice.days * settings.day_rate) +
+        (invoice.meetings * settings.meeting_rate);
+      setTotalAmount(newTotal);
+    }
+  }, [settings, invoice.day_hrs_amount, invoice.eve_hrs_amount, invoice.days, invoice.meetings]);
+
+  // useEffect(() => {
+  //   const calculateTotalAmount = () => {
+  //     const total = dayHoursAmount + eveHoursAmount + days + meetings;
+  //     setTotalAmount(total);
+  //   };
+  //   calculateTotalAmount();
+  // }, [dayHoursAmount, eveHoursAmount, days, meetings]);
 
   
   return (
