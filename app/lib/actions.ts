@@ -31,6 +31,9 @@ export async function createInvoice(formData: FormData) {
     meetings: formData.get("meetings"),
   });
   const settings = await fetchSettings();
+  if (!settings) {
+    throw new Error('Failed to fetch settings');
+  }
   console.log("settings data...", settings);
 
   const day_hrs_amountInCents = day_hrs_amount * 100;

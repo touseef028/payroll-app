@@ -1,39 +1,45 @@
 'use client';
 
-import { EmployeeField, InvoiceForm } from '@/app/lib/definitions';
-import Link from 'next/link';
+import { useState } from 'react';
+import { EmployeeField, Settings } from '@/app/lib/definitions';
+import { createInvoice } from '@/app/lib/actions';
 import {
   CheckIcon,
   ClockIcon,
   CurrencyPoundIcon,
   HandThumbDownIcon,
   UserCircleIcon,
-} from '@heroicons/react/24/outline';
-import { Button } from '@/app/ui/button';
-import { createInvoice } from '@/app/lib/actions';
-import { useState, useEffect } from 'react';
-import SettingsForm from '../settings/settings-form';
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { Button } from "@/app/ui/button";
 
-export default function CreateInvoiceForm({ employees }: { employees: EmployeeField[] }) {
-  const [dayHoursAmount, setDayHoursAmount] = useState(0);
-  const [eveHoursAmount, setEveHoursAmount] = useState(0);
-  const [days, setDays] = useState(0);
-  const [meetings, setMeetings] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(0);
+export default function CreateInvoiceForm({ employees,
+  settings, }: { employees: EmployeeField[]; settings: Settings | null;}) {
+  const [formData, setFormData] = useState({
+    employeeId: '',
+    day_hrs_amount: '',
+    eve_hrs_amount: '',
+    days: '',
+    meetings: '',
+  });
 
-  // const rates = await SettingsForm();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'employeeId' ? value : parseFloat(value) || 0
+    }));
+  };
 
-  useEffect(() => {
-    const calculateTotalAmount = () => {
-      const total =
-        dayHoursAmount +
-        eveHoursAmount +
-        days +
-        meetings;
-      setTotalAmount(total);
-    };
-    calculateTotalAmount();
-  }, [dayHoursAmount, eveHoursAmount, days, meetings]);
+  const calculateTotal = () => {
+    const { day_hrs_amount, eve_hrs_amount, days, meetings } = formData;
+    return (
+      Number(day_hrs_amount) * (settings?.dayTimeRate ?? 0) +
+      Number(eve_hrs_amount) * (settings?.eveRate ?? 0) +
+      Number(days) * (settings?.dayRate ?? 0) +
+      Number(meetings) * (settings?.meetingRate ?? 0)
+    );
+  };
 
   return (
     <form action={createInvoice}>
@@ -48,111 +54,106 @@ export default function CreateInvoiceForm({ employees }: { employees: EmployeeFi
               id="employee"
               name="employeeId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue=""
+              value={formData.employeeId}
+              onChange={handleInputChange}
             >
-              <option value="" disabled>
-                Select a employee
-              </option>
+              <option value="" disabled>Select a employee</option>
               {employees.map((employee) => (
                 <option key={employee.id} value={employee.id}>
                   {employee.name}
                 </option>
               ))}
             </select>
-            <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
         </div>
 
-        {/* Invoice Day Time Hours Amount */}
+        {/* Day Time Hours */}
         <div className="mb-4">
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+          <label htmlFor="day_hrs_amount" className="mb-2 block text-sm font-medium">
             Daytime Hours
           </label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="day_hrs_amount"
-                name="day_hrs_amount"
-                type="number"
-                step="0.01"
-                placeholder="Enter number of hours"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                onChange={(e) => setDayHoursAmount(Number(e.target.value))}              />
-              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
+          <input
+            id="day_hrs_amount"
+            name="day_hrs_amount"
+            type="number"
+            step="0.01"
+            value={formData.day_hrs_amount}
+            onChange={handleInputChange}
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
         </div>
 
-        {/* Invoice Eve Time Hours Amount */}
+        {/* Evening Hours */}
         <div className="mb-4">
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+          <label htmlFor="eve_hrs_amount" className="mb-2 block text-sm font-medium">
             Evening Hours
           </label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="eve_hrs_amount"
-                name="eve_hrs_amount"
-                type="number"
-                step="0.01"
-                placeholder="Enter number of hours"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                onChange={(e) => setEveHoursAmount(Number(e.target.value))}              />
-              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
+          <input
+            id="eve_hrs_amount"
+            name="eve_hrs_amount"
+            type="number"
+            step="0.01"
+            value={formData.eve_hrs_amount}
+            onChange={handleInputChange}
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
         </div>
 
+        {/* Days */}
         <div className="mb-4">
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+          <label htmlFor="days" className="mb-2 block text-sm font-medium">
             Days
           </label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="days"
-                name="days"
-                type="number"
-                step="0.01"
-                placeholder="Enter number of days worked"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                onChange={(e) => setDays(Number(e.target.value))}              />
-              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
+          <input
+            id="days"
+            name="days"
+            type="number"
+            step="0.01"
+            value={formData.days}
+            onChange={handleInputChange}
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
         </div>
 
+        {/* Meetings */}
         <div className="mb-4">
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+          <label htmlFor="meetings" className="mb-2 block text-sm font-medium">
             Meetings
           </label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="meetings"
-                name="meetings"
-                type="number"
-                step="0.01"
-                placeholder="Enter number of meetings attended"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                onChange={(e) => setMeetings(Number(e.target.value))}              />
-              <ClockIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
+          <input
+            id="meetings"
+            name="meetings"
+            type="number"
+            step="0.01"
+            value={formData.meetings}
+            onChange={handleInputChange}
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
         </div>
 
-        {/* Invoice Total Amount */}
-        <div className="mb-4">
-          {/* <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+        {/* Total Amount */}
+        {/* <div className="mb-4">
+          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
             Total Amount
-          </label> */}
+          </label>
+          <input
+            id="amount"
+            name="amount"
+            type="number"
+            value={calculateTotal()}
+            readOnly
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
+        </div> */}
+
+        <div className="mb-4">
           <div className="relative mt-2 rounded-md bg-gray-100 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-600">Total</span>
               <div className="flex items-center">
                 <CurrencyPoundIcon className="h-5 w-5 text-gray-500 mr-2" />
                 <span className="text-2xl font-bold text-gray-800">
-                  {totalAmount.toFixed(2)}
+                {calculateTotal()}
                 </span>
               </div>
             </div>
