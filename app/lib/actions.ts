@@ -1,11 +1,12 @@
 "use server";
-import { z } from 'zod';
-import { sql } from '@vercel/postgres';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { fetchSettings } from './data';
+import { z } from "zod";
+import { sql } from "@vercel/postgres";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { fetchSettings } from "./data";
+import { signIn } from "@/auth";
+import { AuthError } from "next-auth";
 
- 
 const FormSchema = z.object({
   id: z.string(),
   employeeId: z.string(),
@@ -14,14 +15,22 @@ const FormSchema = z.object({
   days: z.coerce.number(),
   meetings: z.coerce.number(),
   amount: z.coerce.number(),
-  status: z.enum(['pending', 'approved', 'rejected']),
+  status: z.enum(["pending", "approved", "rejected"]),
   date: z.string(),
 });
- 
+
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(formData: FormData) {
-  const { employeeId, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status } = CreateInvoice.parse({
+  const {
+    employeeId,
+    amount,
+    day_hrs_amount,
+    eve_hrs_amount,
+    days,
+    meetings,
+    status,
+  } = CreateInvoice.parse({
     employeeId: formData.get("employeeId"),
     amount: formData.get("amount"),
     status: formData.get("status"),
@@ -32,7 +41,7 @@ export async function createInvoice(formData: FormData) {
   });
   const settings = await fetchSettings();
   if (!settings) {
-    throw new Error('Failed to fetch settings');
+    throw new Error("Failed to fetch settings");
   }
   console.log("settings data...", settings);
 
@@ -40,13 +49,13 @@ export async function createInvoice(formData: FormData) {
   const eve_hrs_amountInCents = eve_hrs_amount * 100;
   const daysInCents = days * 100;
   const meetingsInCents = meetings * 100;
-  const date = new Date().toISOString().split('T')[0];
-  
-  const totalAmount = 
-    (day_hrs_amount * settings.dayTimeRate) +
-    (eve_hrs_amount * settings.eveRate) + 
-    (days * settings.dayRate) + // Assuming 8 hours per day
-    (meetings * settings.meetingRate);
+  const date = new Date().toISOString().split("T")[0];
+
+  const totalAmount =
+    day_hrs_amount * settings.dayTimeRate +
+    eve_hrs_amount * settings.eveRate +
+    days * settings.dayRate + // Assuming 8 hours per day
+    meetings * settings.meetingRate;
 
   const amountInCents = Math.round(totalAmount * 100);
 
@@ -59,82 +68,109 @@ export async function createInvoice(formData: FormData) {
   } catch (error) {
     console.log("error", error);
     return {
-      message: 'Database Error: Failed to Create Invoice.',
+      message: "Database Error: Failed to Create Invoice.",
     };
   }
 
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
+  revalidatePath("/dashboard/invoices");
+  redirect("/dashboard/invoices");
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function updateInvoice(id: string, formData: FormData) {
-    const { employeeId, amount, day_hrs_amount, eve_hrs_amount, days, meetings,  status } = UpdateInvoice.parse({
-      employeeId: formData.get('employeeId'),
-      amount: formData.get('amount'),
-      status: formData.get('status'),
-      day_hrs_amount: formData.get("day_hrs_amount"),
-      eve_hrs_amount: formData.get("eve_hrs_amount"),
-      days: formData.get("days"),
-      meetings: formData.get("meetings"),
-    });
-    // const totalAmount = day_hrs_amount + eve_hrs_amount + days + meetings;
-    // const amountInCents = totalAmount * 100;
-    const day_hrs_amountInCents = day_hrs_amount * 100;
-    const eve_hrs_amountInCents = eve_hrs_amount * 100;
-    const daysInCents = days * 100;
-    const meetingsInCents = meetings * 100;
-    const date = new Date().toISOString().split('T')[0];
+  const {
+    employeeId,
+    amount,
+    day_hrs_amount,
+    eve_hrs_amount,
+    days,
+    meetings,
+    status,
+  } = UpdateInvoice.parse({
+    employeeId: formData.get("employeeId"),
+    amount: formData.get("amount"),
+    status: formData.get("status"),
+    day_hrs_amount: formData.get("day_hrs_amount"),
+    eve_hrs_amount: formData.get("eve_hrs_amount"),
+    days: formData.get("days"),
+    meetings: formData.get("meetings"),
+  });
+  // const totalAmount = day_hrs_amount + eve_hrs_amount + days + meetings;
+  // const amountInCents = totalAmount * 100;
+  const day_hrs_amountInCents = day_hrs_amount * 100;
+  const eve_hrs_amountInCents = eve_hrs_amount * 100;
+  const daysInCents = days * 100;
+  const meetingsInCents = meetings * 100;
+  const date = new Date().toISOString().split("T")[0];
 
-    const settings = await fetchSettings();
+  const settings = await fetchSettings();
 
-    const totalAmount = 
-    (day_hrs_amount * settings.dayTimeRate) +
-    (eve_hrs_amount * settings.eveRate) + 
-    (days * settings.dayRate) + // Assuming 8 hours per day
-    (meetings * settings.meetingRate);
+  const totalAmount =
+    day_hrs_amount * settings.dayTimeRate +
+    eve_hrs_amount * settings.eveRate +
+    days * settings.dayRate + // Assuming 8 hours per day
+    meetings * settings.meetingRate;
 
-    const amountInCents = Math.round(totalAmount * 100);
-   
-    try {
-      await sql`
+  const amountInCents = Math.round(totalAmount * 100);
+
+  try {
+    await sql`
           UPDATE invoices
           SET employee_id = ${employeeId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, date = ${date}
           WHERE id = ${id}
         `;
-    } catch (error) {
-      return { message: 'Database Error: Failed to Update Invoice.' };
-    }
-   
-    revalidatePath('/dashboard/invoices');
-    redirect('/dashboard/invoices');
+  } catch (error) {
+    return { message: "Database Error: Failed to Update Invoice." };
   }
 
-  export async function deleteInvoice(id: string) {
-    // throw new Error('Failed to Delete Invoice');
-    try {
-      await sql`DELETE FROM invoices WHERE id = ${id}`;
-      revalidatePath('/dashboard/invoices');
-      return { message: 'Deleted Invoice.' };
-    } catch (error) {
-      return { message: 'Database Error: Failed to Delete Invoice.' };
-    }
-  }
+  revalidatePath("/dashboard/invoices");
+  redirect("/dashboard/invoices");
+}
 
-  export async function updateSettings(formData: FormData) {
-    const { dayTimeRate, eveRate, dayRate, meetingRate } = Object.fromEntries(formData);
-  
-    try {
-      await sql`
+export async function deleteInvoice(id: string) {
+  // throw new Error('Failed to Delete Invoice');
+  try {
+    await sql`DELETE FROM invoices WHERE id = ${id}`;
+    revalidatePath("/dashboard/invoices");
+    return { message: "Deleted Invoice." };
+  } catch (error) {
+    return { message: "Database Error: Failed to Delete Invoice." };
+  }
+}
+
+export async function updateSettings(formData: FormData) {
+  const { dayTimeRate, eveRate, dayRate, meetingRate } =
+    Object.fromEntries(formData);
+
+  try {
+    await sql`
         UPDATE settings
         SET daytime_rate = ${dayTimeRate}, eve_rate = ${eveRate}, day_rate = ${dayRate}, meeting_rate = ${meetingRate}
       `;
-    } catch (error) {
-      return { message: 'Database Error: Failed to Update Settings.' };
-    }
-  
-    revalidatePath('/dashboard/settings');
-    redirect('/dashboard/settings');
+  } catch (error) {
+    return { message: "Database Error: Failed to Update Settings." };
   }
 
+  revalidatePath("/dashboard/settings");
+  redirect("/dashboard/settings");
+}
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData
+) {
+  try {
+    await signIn("credentials", formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return "Invalid credentials.";
+        default:
+          return "Something went wrong.";
+      }
+    }
+    throw error;
+  }
+}

@@ -1,5 +1,12 @@
 import SideNav from '@/app/ui/dashboard/sidenav';
 export const experimental_ppr = true;
+import { Metadata } from 'next';
+ 
+export const metadata: Metadata = {
+  title: 'Locumkit',
+  description: 'Best in the UK',
+  metadataBase: new URL('https://locumkit.com'),
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
