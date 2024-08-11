@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { fetchSettings } from "./data";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
+import bcrypt from "bcrypt";
 
 const FormSchema = z.object({
   id: z.string(),
@@ -173,4 +174,108 @@ export async function authenticate(
     }
     throw error;
   }
+}
+
+const UserSchema = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  email: z.string().email(),
+  date_of_birth: z.string(),
+  phone_number: z.string(),
+  site: z.string(),
+  password: z.string().nullable().optional(),
+});
+
+const CreateUser = UserSchema.omit({ id: true });
+
+export async function createUser(formData: FormData) {
+  const { name, email, date_of_birth, phone_number, site, password } =
+    CreateUser.parse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      date_of_birth: formData.get("date_of_birth"),
+      phone_number: formData.get("phone_number"),
+      site: formData.get("site"),
+      password: formData.get("password"),
+    });
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await sql`
+    INSERT INTO users (name, email, date_of_birth, phone_number, site, password)
+    VALUES (${name}, ${email}, ${date_of_birth}, ${phone_number}, ${site}, ${hashedPassword})
+  `;
+
+  revalidatePath("/dashboard/users");
+  redirect("/dashboard/users");
+}
+
+// const UserSchema = z.object({
+//   name: z.string(),
+//   email: z.string().email(),
+//   phone_number: z.string().optional(),
+//   date_of_birth: z.string().optional(),
+//   site: z.string().optional(),
+//   password: z.string().optional(),
+// });
+export async function updateUser(id: string, formData: FormData) {
+  console.log("formData----->", formData);
+  
+
+  const { name, email, phone_number, date_of_birth, site, password } = UserSchema.parse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone_number: formData.get("phone_number"),
+    date_of_birth: formData.get("date_of_birth"),
+    site: formData.get("site"),
+    password: formData.get('password'),
+  });
+
+  const updateFields: {
+    name: string;
+    email: string;
+    phone_number?: string;
+    date_of_birth?: string;
+    site?: string;
+  } = {
+    name,
+    email,
+    phone_number,
+    date_of_birth,
+    site,
+  };
+
+  if (password && typeof password === "string") {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await sql`
+      UPDATE users
+      SET name = ${name},
+          email = ${email},
+          phone_number = ${phone_number},
+          date_of_birth = ${date_of_birth},
+          site = ${site},
+          password = ${hashedPassword}
+          WHERE id = ${id}
+      `;
+  }
+
+  try {
+    await sql`
+      UPDATE users
+      SET name = ${name},
+          email = ${email},
+          phone_number = ${phone_number},
+          date_of_birth = ${date_of_birth},
+          site = ${site}
+          WHERE id = ${id}
+      `;
+  } catch (error) {
+    return { message: "Database Error: Failed to Update User." };
+  }
+
+  revalidatePath("/dashboard/users");
+  redirect("/dashboard/users");
+}
+
+export async function deleteUser(id: string) {
+  await sql`DELETE FROM users WHERE id = ${id}`;
+  revalidatePath("/dashboard/users");
 }

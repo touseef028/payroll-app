@@ -7,6 +7,7 @@ import {
   LatestInvoiceRaw,
   Settings,
   Revenue,
+  User,
 } from "./definitions";
 import { formatCurrency } from "./utils";
 
@@ -57,9 +58,10 @@ export async function fetchCardData() {
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
     const employeeCountPromise = sql`SELECT COUNT(*) FROM employees`;
     const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) AS "approved",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
+     COUNT(CASE WHEN status = 'approved' THEN 1 END) AS "approved",
+     COUNT(CASE WHEN status = 'pending' THEN 1 END) AS "pending",
+     COUNT(CASE WHEN status = 'rejected' THEN 1 END) AS "rejected"
+     FROM invoices`;
 
     const data = await Promise.all([
       invoiceCountPromise,
@@ -69,14 +71,16 @@ export async function fetchCardData() {
 
     const numberOfInvoices = Number(data[0].rows[0].count ?? "0");
     const numberOfEmployees = Number(data[1].rows[0].count ?? "0");
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].approved ?? "0");
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? "0");
+    const totalApprovedInvoices = Number(data[2].rows[0].approved ?? "0");
+    const totalPendingInvoices = Number(data[2].rows[0].pending ?? "0");
+    const totalRejectedInvoices = Number(data[2].rows[0].rejected ?? "0");
 
     return {
       numberOfEmployees,
       numberOfInvoices,
-      totalPaidInvoices,
+      totalApprovedInvoices,
       totalPendingInvoices,
+      totalRejectedInvoices,
     };
   } catch (error) {
     console.error("Database Error:", error);
@@ -175,7 +179,7 @@ export async function fetchInvoiceById(id: string) {
   }
 }
 
-export async function fetchEmployees() {
+export async function fetchEmployees(query: string) {
   try {
     const data = await sql<EmployeeField>`
       SELECT
@@ -247,3 +251,39 @@ export async function fetchSettings(): Promise<Settings | null> {
     throw new Error("Failed to fetch settings.");
   }
 }
+
+export async function fetchFilteredUsers(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const users = await sql<User>`
+      SELECT *
+      FROM users
+      WHERE
+        name ILIKE ${`%${query}%`} OR
+        email ILIKE ${`%${query}%`}
+      ORDER BY name ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+    return users.rows;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch users.");
+  }
+}
+
+export async function fetchUserById(id:string) {
+  try {
+    const users = await sql<User>`
+      SELECT *
+      FROM users
+      WHERE
+       id= ${id}
+    `;
+    return users.rows?.length? users.rows[0]:null;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch users.");
+  }
+}
+

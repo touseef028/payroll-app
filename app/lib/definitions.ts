@@ -7,6 +7,9 @@ export type User = {
   name: string;
   email: string;
   password: string;
+  date_of_birth: string;
+  phone_number: string;
+  site: string;
 };
 
 export type Employee = {
