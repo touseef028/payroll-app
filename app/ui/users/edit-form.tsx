@@ -59,7 +59,10 @@ export default function EditUserForm({ user }: { user: User }) {
 
         {/* Password Change Option */}
         <div className="mb-4">
-          <label htmlFor="change_password" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="change_password"
+            className="mb-2 block text-sm font-medium"
+          >
             <input
               type="checkbox"
               id="change_password"
@@ -73,7 +76,10 @@ export default function EditUserForm({ user }: { user: User }) {
         {/* Password Input (only shown when checkbox is checked) */}
         {showPasswordField && (
           <div className="mb-4">
-            <label htmlFor="password" className="mb-2 block text-sm font-medium">
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-medium"
+            >
               New Password
             </label>
             <div className="relative">
@@ -123,7 +129,11 @@ export default function EditUserForm({ user }: { user: User }) {
               id="date_of_birth"
               name="date_of_birth"
               type="date"
-              defaultValue={user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : ''}
+              defaultValue={
+                user.date_of_birth
+                  ? new Date(user.date_of_birth).toISOString().split("T")[0]
+                  : ""
+              }
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
             />
             <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
@@ -145,6 +155,31 @@ export default function EditUserForm({ user }: { user: User }) {
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
             />
             <MapPinIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+          </div>
+        </div>
+
+        {/* User Type */}
+        <div className="mb-4">
+          <label className="mb-2 block text-sm font-medium">User Type</label>
+          <div className="flex gap-4">
+            {["Manager", "Staff", "Accountant"].map((type) => (
+              <div key={type} className="flex items-center">
+                <input
+                  type="radio"
+                  id={`user_type_${type.toLowerCase()}`}
+                  name="user_type"
+                  value={type}
+                  defaultChecked={user.user_type?.includes(type)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor={`user_type_${type.toLowerCase()}`}
+                  className="ml-2 text-sm text-gray-700"
+                >
+                  {type}
+                </label>
+              </div>
+            ))}
           </div>
         </div>
       </div>

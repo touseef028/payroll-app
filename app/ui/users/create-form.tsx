@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { User } from '@/app/lib/definitions';
-import Link from 'next/link';
+import { useState } from "react";
+import { User } from "@/app/lib/definitions";
+import Link from "next/link";
 import {
   UserCircleIcon,
   AtSymbolIcon,
@@ -10,23 +10,23 @@ import {
   PhoneIcon,
   CalendarIcon,
   MapPinIcon,
-} from '@heroicons/react/24/outline';
-import { Button } from '@/app/ui/button';
-import { createUser } from '@/app/lib/actions';
+} from "@heroicons/react/24/outline";
+import { Button } from "@/app/ui/button";
+import { createUser } from "@/app/lib/actions";
 
 export default function CreateUserForm() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    phone_number: '',
-    date_of_birth: '',
-    site: '',
+    name: "",
+    email: "",
+    password: "",
+    phone_number: "",
+    date_of_birth: "",
+    site: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -91,7 +91,10 @@ export default function CreateUserForm() {
 
         {/* Phone Number */}
         <div className="mb-4">
-          <label htmlFor="phone_number" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="phone_number"
+            className="mb-2 block text-sm font-medium"
+          >
             Phone Number
           </label>
           <div className="relative">
@@ -109,7 +112,10 @@ export default function CreateUserForm() {
 
         {/* Date of Birth */}
         <div className="mb-4">
-          <label htmlFor="date_of_birth" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="date_of_birth"
+            className="mb-2 block text-sm font-medium"
+          >
             Date of Birth
           </label>
           <div className="relative">
@@ -141,7 +147,31 @@ export default function CreateUserForm() {
             <MapPinIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
         </div>
+
+        <div className="mb-4">
+          <label className="mb-2 block text-sm font-medium">User Type</label>
+          <div className="flex gap-4">
+            {["Manager", "Staff", "Accountant"].map((type) => (
+              <div key={type} className="flex items-center">
+                <input
+                  type="radio"
+                  id={`user_type_${type.toLowerCase()}`}
+                  name="user_type"
+                  value={type}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor={`user_type_${type.toLowerCase()}`}
+                  className="ml-2 text-sm text-gray-700"
+                >
+                  {type}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
+
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/users"

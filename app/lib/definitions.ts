@@ -10,6 +10,7 @@ export type User = {
   date_of_birth: string;
   phone_number: string;
   site: string;
+  user_type: string;
 };
 
 export type Employee = {

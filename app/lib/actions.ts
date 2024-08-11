@@ -199,9 +199,11 @@ export async function createUser(formData: FormData) {
       password: formData.get("password"),
     });
   const hashedPassword = await bcrypt.hash(password, 10);
+  const user_type = formData.getAll("user_type").join(",");
+
   await sql`
-    INSERT INTO users (name, email, date_of_birth, phone_number, site, password)
-    VALUES (${name}, ${email}, ${date_of_birth}, ${phone_number}, ${site}, ${hashedPassword})
+    INSERT INTO users (name, email, password, phone_number, date_of_birth, site, user_type)
+    VALUES (${name}, ${email}, ${hashedPassword}, ${phone_number}, ${date_of_birth}, ${site}, ${user_type})
   `;
 
   revalidatePath("/dashboard/users");
@@ -218,16 +220,18 @@ export async function createUser(formData: FormData) {
 // });
 export async function updateUser(id: string, formData: FormData) {
   console.log("formData----->", formData);
-  
 
-  const { name, email, phone_number, date_of_birth, site, password } = UserSchema.parse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    phone_number: formData.get("phone_number"),
-    date_of_birth: formData.get("date_of_birth"),
-    site: formData.get("site"),
-    password: formData.get('password'),
-  });
+  const { name, email, phone_number, date_of_birth, site, password } =
+    UserSchema.parse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone_number: formData.get("phone_number"),
+      date_of_birth: formData.get("date_of_birth"),
+      site: formData.get("site"),
+      password: formData.get("password"),
+    });
+
+  const user_type = formData.get("user_type") as string;
 
   const updateFields: {
     name: string;
@@ -235,12 +239,14 @@ export async function updateUser(id: string, formData: FormData) {
     phone_number?: string;
     date_of_birth?: string;
     site?: string;
+    user_type?: string;
   } = {
     name,
     email,
     phone_number,
     date_of_birth,
     site,
+    user_type,
   };
 
   if (password && typeof password === "string") {
@@ -252,23 +258,25 @@ export async function updateUser(id: string, formData: FormData) {
           phone_number = ${phone_number},
           date_of_birth = ${date_of_birth},
           site = ${site},
+          user_type = ${user_type},
           password = ${hashedPassword}
-          WHERE id = ${id}
+      WHERE id = ${id}
+    `;
+  } else {
+    try {
+      await sql`
+        UPDATE users
+        SET name = ${name},
+            email = ${email},
+            phone_number = ${phone_number},
+            date_of_birth = ${date_of_birth},
+            site = ${site},
+            user_type = ${user_type}
+        WHERE id = ${id}
       `;
-  }
-
-  try {
-    await sql`
-      UPDATE users
-      SET name = ${name},
-          email = ${email},
-          phone_number = ${phone_number},
-          date_of_birth = ${date_of_birth},
-          site = ${site}
-          WHERE id = ${id}
-      `;
-  } catch (error) {
-    return { message: "Database Error: Failed to Update User." };
+    } catch (error) {
+      return { message: "Database Error: Failed to Update User." };
+    }
   }
 
   revalidatePath("/dashboard/users");

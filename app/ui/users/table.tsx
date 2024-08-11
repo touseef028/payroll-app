@@ -8,6 +8,7 @@ export default function UsersTable({
   users,
 }: {
   users: Array<{
+    user_type: string;
     id: string;
     name: string;
     email: string;
@@ -39,6 +40,10 @@ export default function UsersTable({
                   <th scope="col" className="px-3 py-5 font-medium">
                     Site
                   </th>
+                  <th scope="col" className="px-3 py-5 font-medium">
+                    Type
+                  </th>
+
                   <th scope="col" className="relative py-3 pl-6 pr-3">
                     <span className="sr-only">Edit</span>
                   </th>
@@ -68,6 +73,9 @@ export default function UsersTable({
                       {user.phone_number}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">{user.site}</td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {user.user_type}
+                    </td>
                     <td className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex justify-end gap-3">
                         <UpdateUser id={user.id} />
