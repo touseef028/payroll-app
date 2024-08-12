@@ -102,6 +102,7 @@ export async function fetchFilteredInvoices(
         invoices.amount,
         invoices.date,
         invoices.status,
+        invoices.expenses,
         employees.name,
         employees.email,
         employees.image_url
@@ -111,6 +112,7 @@ export async function fetchFilteredInvoices(
         employees.name ILIKE ${`%${query}%`} OR
         employees.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
+        invoices.expenses::text ILIKE ${`%${query}%`} OR
         invoices.date::text ILIKE ${`%${query}%`} OR
         invoices.status ILIKE ${`%${query}%`}
       ORDER BY invoices.date DESC
@@ -133,6 +135,7 @@ export async function fetchInvoicesPages(query: string) {
       employees.name ILIKE ${`%${query}%`} OR
       employees.email ILIKE ${`%${query}%`} OR
       invoices.amount::text ILIKE ${`%${query}%`} OR
+      invoices.expenses::text ILIKE ${`%${query}%`} OR
       invoices.date::text ILIKE ${`%${query}%`} OR
       invoices.status ILIKE ${`%${query}%`}
   `;
@@ -156,10 +159,14 @@ export async function fetchInvoiceById(id: string) {
         invoices.day_hrs_amount,
         invoices.eve_hrs_amount,
         invoices.days,
-        invoices.meetings
+        invoices.meetings,
+        invoices.expenses,
+        invoices.receipt_url
       FROM invoices
       WHERE invoices.id = ${id};
     `;
+
+    // console.log("Data is-------->", data);
 
     const invoice = data.rows.map((invoice) => ({
       ...invoice,
@@ -169,6 +176,7 @@ export async function fetchInvoiceById(id: string) {
       eve_hrs_amount: invoice.eve_hrs_amount / 100,
       days: invoice.days / 100,
       meetings: invoice.meetings / 100,
+      expenses: invoice.expenses / 100,
       // Convert amount from cents to dollars
     }));
 

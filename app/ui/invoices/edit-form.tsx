@@ -190,7 +190,7 @@ export default function EditInvoiceForm({
 
         <div className="mb-4">
           <div className="relative mt-2 rounded-md bg-gray-100 p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <span className="text-sm font-medium text-gray-600">Total</span>
               <div className="flex items-center">
                 <CurrencyPoundIcon className="h-5 w-5 text-gray-500 mr-2" />
@@ -200,6 +200,40 @@ export default function EditInvoiceForm({
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="expenses" className="mb-2 block text-sm font-medium">
+            Expenses
+          </label>
+          <input
+            id="expenses"
+            name="expenses"
+            type="number"
+            step="0.01"
+            defaultValue={invoice.expenses}
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="receipt" className="mb-2 block text-sm font-medium">
+            Receipt {invoice.receipt_url && "(already uploaded)"}
+          </label>
+          <input
+            id="receipt"
+            name="receipt"
+            type="file"
+            accept="image/jpeg"
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
+          {invoice.receipt_url && (
+            <img
+              src={invoice.receipt_url}
+              alt="Receipt"
+              className="mt-2 max-w-xs"
+            />
+          )}
         </div>
 
         {/* Invoice Status */}

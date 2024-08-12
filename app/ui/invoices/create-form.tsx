@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { EmployeeField, Settings } from '@/app/lib/definitions';
-import { createInvoice } from '@/app/lib/actions';
+import { useState } from "react";
+import { EmployeeField, Settings } from "@/app/lib/definitions";
+import { createInvoice } from "@/app/lib/actions";
 import {
   CheckIcon,
   ClockIcon,
@@ -13,21 +13,28 @@ import {
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
 
-export default function CreateInvoiceForm({ employees,
-  settings, }: { employees: EmployeeField[]; settings: Settings | null;}) {
+export default function CreateInvoiceForm({
+  employees,
+  settings,
+}: {
+  employees: EmployeeField[];
+  settings: Settings | null;
+}) {
   const [formData, setFormData] = useState({
-    employeeId: '',
-    day_hrs_amount: '',
-    eve_hrs_amount: '',
-    days: '',
-    meetings: '',
+    employeeId: "",
+    day_hrs_amount: "",
+    eve_hrs_amount: "",
+    days: "",
+    meetings: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'employeeId' ? value : parseFloat(value) || 0
+      [name]: name === "employeeId" ? value : parseFloat(value) || 0,
     }));
   };
 
@@ -57,7 +64,9 @@ export default function CreateInvoiceForm({ employees,
               value={formData.employeeId}
               onChange={handleInputChange}
             >
-              <option value="" disabled>Select a employee</option>
+              <option value="" disabled>
+                Select a employee
+              </option>
               {employees.map((employee) => (
                 <option key={employee.id} value={employee.id}>
                   {employee.name}
@@ -69,7 +78,10 @@ export default function CreateInvoiceForm({ employees,
 
         {/* Day Time Hours */}
         <div className="mb-4">
-          <label htmlFor="day_hrs_amount" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="day_hrs_amount"
+            className="mb-2 block text-sm font-medium"
+          >
             Daytime Hours
           </label>
           <input
@@ -85,7 +97,10 @@ export default function CreateInvoiceForm({ employees,
 
         {/* Evening Hours */}
         <div className="mb-4">
-          <label htmlFor="eve_hrs_amount" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="eve_hrs_amount"
+            className="mb-2 block text-sm font-medium"
+          >
             Evening Hours
           </label>
           <input
@@ -148,16 +163,42 @@ export default function CreateInvoiceForm({ employees,
 
         <div className="mb-4">
           <div className="relative mt-2 rounded-md bg-gray-100 p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <span className="text-sm font-medium text-gray-600">Total</span>
               <div className="flex items-center">
                 <CurrencyPoundIcon className="h-5 w-5 text-gray-500 mr-2" />
                 <span className="text-2xl font-bold text-gray-800">
-                {calculateTotal()}
+                  {calculateTotal()}
                 </span>
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="expenses" className="mb-2 block text-sm font-medium">
+            Expenses
+          </label>
+          <input
+            id="expenses"
+            name="expenses"
+            type="number"
+            step="0.01"
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="receipt" className="mb-2 block text-sm font-medium">
+            Receipt
+          </label>
+          <input
+            id="receipt"
+            name="receipt"
+            type="file"
+            accept="image/jpeg"
+            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+          />
         </div>
 
         {/* Invoice Status */}

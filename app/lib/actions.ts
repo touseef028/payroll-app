@@ -7,6 +7,16 @@ import { fetchSettings } from "./data";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { v4 as uuidv4 } from "uuid";
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION ?? undefined,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
+  },
+});
 
 const FormSchema = z.object({
   id: z.string(),
@@ -18,6 +28,8 @@ const FormSchema = z.object({
   amount: z.coerce.number(),
   status: z.enum(["pending", "approved", "rejected"]),
   date: z.string(),
+  receipt_url: z.string().optional(),
+  expenses: z.coerce.number(),
 });
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
@@ -31,6 +43,7 @@ export async function createInvoice(formData: FormData) {
     days,
     meetings,
     status,
+    expenses,
   } = CreateInvoice.parse({
     employeeId: formData.get("employeeId"),
     amount: formData.get("amount"),
@@ -39,17 +52,19 @@ export async function createInvoice(formData: FormData) {
     eve_hrs_amount: formData.get("eve_hrs_amount"),
     days: formData.get("days"),
     meetings: formData.get("meetings"),
+    expenses: formData.get("expenses"),
   });
   const settings = await fetchSettings();
   if (!settings) {
     throw new Error("Failed to fetch settings");
   }
-  console.log("settings data...", settings);
+  // console.log("settings data...", settings);
 
   const day_hrs_amountInCents = day_hrs_amount * 100;
   const eve_hrs_amountInCents = eve_hrs_amount * 100;
   const daysInCents = days * 100;
   const meetingsInCents = meetings * 100;
+  const expensesInCents = expenses * 100;
   const date = new Date().toISOString().split("T")[0];
 
   const totalAmount =
@@ -60,10 +75,27 @@ export async function createInvoice(formData: FormData) {
 
   const amountInCents = Math.round(totalAmount * 100);
 
+  const file = formData.get("receipt") as File;
+  let receiptUrl = "";
+
+  if (file.size > 0) {
+    const fileExtension = file.name.split(".").pop();
+    const fileName = `${uuidv4()}.${fileExtension}`;
+    const uploadParams = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: fileName,
+      Body: await file.arrayBuffer(),
+      ContentType: file.type,
+    };
+
+    await s3Client.send(new PutObjectCommand(uploadParams));
+    receiptUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
+  }
+
   try {
     await sql`
-      INSERT INTO invoices (employee_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date)
-      VALUES (${employeeId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date})
+      INSERT INTO invoices (employee_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date, expenses, receipt_url)
+      VALUES (${employeeId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl})
     `;
     console.log("success");
   } catch (error) {
@@ -80,6 +112,7 @@ export async function createInvoice(formData: FormData) {
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function updateInvoice(id: string, formData: FormData) {
+  // console.log("formData---->", formData);
   const {
     employeeId,
     amount,
@@ -88,6 +121,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     days,
     meetings,
     status,
+    expenses,
   } = UpdateInvoice.parse({
     employeeId: formData.get("employeeId"),
     amount: formData.get("amount"),
@@ -96,6 +130,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     eve_hrs_amount: formData.get("eve_hrs_amount"),
     days: formData.get("days"),
     meetings: formData.get("meetings"),
+    expenses: formData.get("expenses"),
   });
   // const totalAmount = day_hrs_amount + eve_hrs_amount + days + meetings;
   // const amountInCents = totalAmount * 100;
@@ -103,6 +138,7 @@ export async function updateInvoice(id: string, formData: FormData) {
   const eve_hrs_amountInCents = eve_hrs_amount * 100;
   const daysInCents = days * 100;
   const meetingsInCents = meetings * 100;
+  const expensesInCents = expenses * 100;
   const date = new Date().toISOString().split("T")[0];
 
   const settings = await fetchSettings();
@@ -115,10 +151,27 @@ export async function updateInvoice(id: string, formData: FormData) {
 
   const amountInCents = Math.round(totalAmount * 100);
 
+  const file = formData.get("receipt") as File;
+  let receiptUrl = formData.get("existing_receipt_url") as string || null;
+
+  if (file.size > 0) {
+    const fileExtension = file.name.split(".").pop();
+    const fileName = `${uuidv4()}.${fileExtension}`;
+    const uploadParams = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: fileName,
+      Body: await file.arrayBuffer(),
+      ContentType: file.type,
+    };
+
+    await s3Client.send(new PutObjectCommand(uploadParams));
+    receiptUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
+  }
+
   try {
     await sql`
           UPDATE invoices
-          SET employee_id = ${employeeId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, date = ${date}
+          SET employee_id = ${employeeId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, date = ${date}, expenses = ${expensesInCents}, receipt_url = ${receiptUrl}
           WHERE id = ${id}
         `;
   } catch (error) {
