@@ -91,7 +91,7 @@ export async function createInvoice(formData: FormData) {
     };
 
     await s3Client.send(new PutObjectCommand(uploadParams));
-    receiptUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
+    receiptUrl = `${fileName}`;
   }
 
   try {
