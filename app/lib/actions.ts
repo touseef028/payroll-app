@@ -84,7 +84,7 @@ export async function createInvoice(formData: FormData) {
     const uploadParams = {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: fileName,
-      Body: await file.arrayBuffer(),
+      Body: Buffer.from(await file.arrayBuffer()),
       ContentType: file.type,
     };
 
@@ -143,6 +143,10 @@ export async function updateInvoice(id: string, formData: FormData) {
 
   const settings = await fetchSettings();
 
+  if (!settings) {
+    throw new Error("Failed to fetch settings");
+  }
+
   const totalAmount =
     day_hrs_amount * settings.dayTimeRate +
     eve_hrs_amount * settings.eveRate +
@@ -160,7 +164,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     const uploadParams = {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: fileName,
-      Body: await file.arrayBuffer(),
+      Body: Buffer.from(await file.arrayBuffer()),
       ContentType: file.type,
     };
 
@@ -194,13 +198,17 @@ export async function deleteInvoice(id: string) {
 }
 
 export async function updateSettings(formData: FormData) {
-  const { dayTimeRate, eveRate, dayRate, meetingRate } =
-    Object.fromEntries(formData);
+  const { dayTimeRate, eveRate, dayRate, meetingRate } = Object.fromEntries(formData) as {
+    dayTimeRate: string;
+    eveRate: string;
+    dayRate: string;
+    meetingRate: string;
+  };
 
   try {
     await sql`
         UPDATE settings
-        SET daytime_rate = ${dayTimeRate}, eve_rate = ${eveRate}, day_rate = ${dayRate}, meeting_rate = ${meetingRate}
+        SET daytime_rate = ${Number(dayTimeRate)}, eve_rate = ${Number(eveRate)}, day_rate = ${Number(dayRate)}, meeting_rate = ${Number(meetingRate)}
       `;
   } catch (error) {
     return { message: "Database Error: Failed to Update Settings." };
@@ -251,6 +259,11 @@ export async function createUser(formData: FormData) {
       site: formData.get("site"),
       password: formData.get("password"),
     });
+  
+  if (!password) {
+    throw new Error("Password is required");
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
   const user_type = formData.getAll("user_type").join(",");
 

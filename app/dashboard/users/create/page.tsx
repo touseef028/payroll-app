@@ -1,5 +1,5 @@
 import Form from '@/app/ui/users/create-form';
-import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';import { User } from '@/app/lib/data';
+import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 
 export default async function Page() {
   return (
