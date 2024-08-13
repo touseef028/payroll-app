@@ -35,6 +35,7 @@ export type Invoice = {
   meetings:number;
   expenses: number;
   receipt_url: string;
+  presignedUrl: string;
   // In TypeScript, this is called a string union type.
   // It means that the "status" property can only be one of the two strings: 'pending' or 'approved'.
   status: 'pending' | 'approved' | 'rejected';
@@ -106,6 +107,7 @@ export type InvoiceForm = {
   amount: number;
   expenses: number;
   receipt_url: string;
+  presignedUrl: string;
   status: 'pending' | 'approved' | 'rejected';
 };
 

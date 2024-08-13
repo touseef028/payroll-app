@@ -227,9 +227,9 @@ export default function EditInvoiceForm({
             accept="image/jpeg"
             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
           />
-          {invoice.receipt_url && (
+          {invoice.presignedUrl && (
             <img
-              src={invoice.receipt_url}
+              src={invoice.presignedUrl}
               alt="Receipt"
               className="mt-2 max-w-xs"
             />

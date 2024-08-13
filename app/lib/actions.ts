@@ -7,8 +7,10 @@ import { fetchSettings } from "./data";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION ?? undefined,
@@ -167,9 +169,16 @@ export async function updateInvoice(id: string, formData: FormData) {
       Body: Buffer.from(await file.arrayBuffer()),
       ContentType: file.type,
     };
+    // const getObjectParams = {
+    //   Bucket: process.env.AWS_S3_BUCKET_NAME,
+    //   Key: fileName,
+    // };
 
     await s3Client.send(new PutObjectCommand(uploadParams));
     receiptUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
+
+    // const command = new GetObjectCommand(getObjectParams);
+    // receiptUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
   }
 
   try {
