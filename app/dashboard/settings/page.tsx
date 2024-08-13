@@ -7,7 +7,7 @@ export default async function SettingsPage() {
   return (
     <main>
       <h1 className="mb-4 text-xl md:text-2xl">Settings</h1>
-      <SettingsForm settings={settings} />
+      {settings && <SettingsForm settings={settings} />}
     </main>
   );
 }
