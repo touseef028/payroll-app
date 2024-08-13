@@ -8,6 +8,7 @@ import {
   Settings,
   Revenue,
   User,
+  UserField,
 } from "./definitions";
 import { formatCurrency } from "./utils";
 
@@ -33,9 +34,9 @@ export async function fetchRevenue() {
 export async function fetchLatestInvoices() {
   try {
     const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, employees.name, employees.image_url, employees.email, invoices.id
+      SELECT invoices.amount, users.name, users.email, invoices.id
       FROM invoices
-      JOIN employees ON invoices.employee_id = employees.id
+      JOIN users ON invoices.user_id = users.id
       ORDER BY invoices.date DESC
       LIMIT 5`;
 
@@ -56,7 +57,7 @@ export async function fetchCardData() {
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const employeeCountPromise = sql`SELECT COUNT(*) FROM employees`;
+    const employeeCountPromise = sql`SELECT COUNT(*) FROM users`;
     const invoiceStatusPromise = sql`SELECT
      COUNT(CASE WHEN status = 'approved' THEN 1 END) AS "approved",
      COUNT(CASE WHEN status = 'pending' THEN 1 END) AS "pending",
@@ -103,14 +104,13 @@ export async function fetchFilteredInvoices(
         invoices.date,
         invoices.status,
         invoices.expenses,
-        employees.name,
-        employees.email,
-        employees.image_url
+        users.name,
+        users.email
       FROM invoices
-      JOIN employees ON invoices.employee_id = employees.id
+      JOIN users ON invoices.user_id = users.id
       WHERE
-        employees.name ILIKE ${`%${query}%`} OR
-        employees.email ILIKE ${`%${query}%`} OR
+        users.name ILIKE ${`%${query}%`} OR
+        users.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
         invoices.expenses::text ILIKE ${`%${query}%`} OR
         invoices.date::text ILIKE ${`%${query}%`} OR
@@ -130,10 +130,10 @@ export async function fetchInvoicesPages(query: string) {
   try {
     const count = await sql`SELECT COUNT(*)
     FROM invoices
-    JOIN employees ON invoices.employee_id = employees.id
+    JOIN users ON invoices.user_id = users.id
     WHERE
-      employees.name ILIKE ${`%${query}%`} OR
-      employees.email ILIKE ${`%${query}%`} OR
+      users.name ILIKE ${`%${query}%`} OR
+      users.email ILIKE ${`%${query}%`} OR
       invoices.amount::text ILIKE ${`%${query}%`} OR
       invoices.expenses::text ILIKE ${`%${query}%`} OR
       invoices.date::text ILIKE ${`%${query}%`} OR
@@ -153,7 +153,7 @@ export async function fetchInvoiceById(id: string) {
     const data = await sql<InvoiceForm>`
       SELECT
         invoices.id,
-        invoices.employee_id,
+        invoices.user_id,
         invoices.amount,
         invoices.status,
         invoices.day_hrs_amount,
@@ -187,21 +187,39 @@ export async function fetchInvoiceById(id: string) {
   }
 }
 
-export async function fetchEmployees(query: string) {
+// export async function fetchEmployees(query: string) {
+//   try {
+//     const data = await sql<EmployeeField>`
+//       SELECT
+//         id,
+//         name
+//       FROM users
+//       ORDER BY name ASC
+//     `;
+
+//     const users = data.rows;
+//     return users;
+//   } catch (err) {
+//     console.error("Database Error:", err);
+//     throw new Error("Failed to fetch all users.");
+//   }
+// }
+
+export async function fetchUsers(query: string) {
   try {
-    const data = await sql<EmployeeField>`
+    const data = await sql<UserField>`
       SELECT
         id,
         name
-      FROM employees
+      FROM users
       ORDER BY name ASC
     `;
 
-    const employees = data.rows;
-    return employees;
+    const users = data.rows;
+    return users;
   } catch (err) {
     console.error("Database Error:", err);
-    throw new Error("Failed to fetch all employees.");
+    throw new Error("Failed to fetch all users.");
   }
 }
 
@@ -209,29 +227,28 @@ export async function fetchFilteredEmployees(query: string) {
   try {
     const data = await sql<EmployeesTableType>`
 		SELECT
-		  employees.id,
-		  employees.name,
-		  employees.email,
-		  employees.image_url,
+		  users.id,
+		  users.name,
+		  users.email,
 		  COUNT(invoices.id) AS total_invoices,
 		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
 		  SUM(CASE WHEN invoices.status = 'approved' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM employees
-		LEFT JOIN invoices ON employees.id = invoices.employee_id
+		FROM users
+		LEFT JOIN invoices ON users.id = invoices.user_id
 		WHERE
-		  employees.name ILIKE ${`%${query}%`} OR
-        employees.email ILIKE ${`%${query}%`}
-		GROUP BY employees.id, employees.name, employees.email, employees.image_url
-		ORDER BY employees.name ASC
+		  users.name ILIKE ${`%${query}%`} OR
+        users.email ILIKE ${`%${query}%`}
+		GROUP BY users.id, users.name, users.email
+		ORDER BY users.name ASC
 	  `;
 
-    const employees = data.rows.map((employee) => ({
+    const users = data.rows.map((employee) => ({
       ...employee,
       total_pending: formatCurrency(employee.total_pending),
       total_paid: formatCurrency(employee.total_paid),
     }));
 
-    return employees;
+    return users;
   } catch (err) {
     console.error("Database Error:", err);
     throw new Error("Failed to fetch employee table.");

@@ -1,5 +1,5 @@
 "use client";
-import { EmployeeField, InvoiceForm, Settings } from "@/app/lib/definitions";
+import { UserField, InvoiceForm, Settings } from "@/app/lib/definitions";
 import {
   CheckIcon,
   ClockIcon,
@@ -14,11 +14,11 @@ import { useEffect, useState } from "react";
 
 export default function EditInvoiceForm({
   invoice,
-  employees,
+  users,
   settings,
 }: {
   invoice: InvoiceForm;
-  employees: EmployeeField[];
+  users: UserField[];
   settings: Settings | null;
 }) {
   const [totalAmount, setTotalAmount] = useState(invoice.amount);
@@ -45,21 +45,21 @@ export default function EditInvoiceForm({
         {/* Employee Name */}
         <div className="mb-4">
           <label htmlFor="employee" className="mb-2 block text-sm font-medium">
-            Choose employee
+            Staff
           </label>
           <div className="relative">
             <select
-              id="employee"
-              name="employeeId"
+              id="user"
+              name="userId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue={invoice.employee_id}
+              defaultValue={invoice.user_id}
             >
               <option value="" disabled>
                 Select a employee
               </option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>
-                  {employee.name}
+              {users && users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
                 </option>
               ))}
             </select>

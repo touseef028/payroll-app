@@ -20,7 +20,7 @@ const s3Client = new S3Client({
 
 const FormSchema = z.object({
   id: z.string(),
-  employeeId: z.string(),
+  userId: z.string(),
   day_hrs_amount: z.coerce.number(),
   eve_hrs_amount: z.coerce.number(),
   days: z.coerce.number(),
@@ -36,7 +36,7 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(formData: FormData) {
   const {
-    employeeId,
+    userId,
     amount,
     day_hrs_amount,
     eve_hrs_amount,
@@ -45,7 +45,7 @@ export async function createInvoice(formData: FormData) {
     status,
     expenses,
   } = CreateInvoice.parse({
-    employeeId: formData.get("employeeId"),
+    userId: formData.get("userId"),
     amount: formData.get("amount"),
     status: formData.get("status"),
     day_hrs_amount: formData.get("day_hrs_amount"),
@@ -94,8 +94,8 @@ export async function createInvoice(formData: FormData) {
 
   try {
     await sql`
-      INSERT INTO invoices (employee_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date, expenses, receipt_url)
-      VALUES (${employeeId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl})
+      INSERT INTO invoices (user_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date, expenses, receipt_url)
+      VALUES (${userId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl})
     `;
     console.log("success");
   } catch (error) {
@@ -114,7 +114,7 @@ const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 export async function updateInvoice(id: string, formData: FormData) {
   // console.log("formData---->", formData);
   const {
-    employeeId,
+    userId,
     amount,
     day_hrs_amount,
     eve_hrs_amount,
@@ -123,7 +123,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     status,
     expenses,
   } = UpdateInvoice.parse({
-    employeeId: formData.get("employeeId"),
+    userId: formData.get("userId"),
     amount: formData.get("amount"),
     status: formData.get("status"),
     day_hrs_amount: formData.get("day_hrs_amount"),
@@ -171,7 +171,7 @@ export async function updateInvoice(id: string, formData: FormData) {
   try {
     await sql`
           UPDATE invoices
-          SET employee_id = ${employeeId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, date = ${date}, expenses = ${expensesInCents}, receipt_url = ${receiptUrl}
+          SET user_id = ${userId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, date = ${date}, expenses = ${expensesInCents}, receipt_url = ${receiptUrl}
           WHERE id = ${id}
         `;
   } catch (error) {
@@ -272,7 +272,7 @@ export async function createUser(formData: FormData) {
 //   password: z.string().optional(),
 // });
 export async function updateUser(id: string, formData: FormData) {
-  console.log("formData----->", formData);
+  // console.log("formData----->", formData);
 
   const { name, email, phone_number, date_of_birth, site, password } =
     UserSchema.parse({

@@ -13,16 +13,20 @@ export type User = {
   user_type: string;
 };
 
+export type UserField = {
+  id: string;
+  name: string;
+};
+
 export type Employee = {
   id: string;
   name: string;
   email: string;
-  image_url: string;
 };
 
 export type Invoice = {
   id: string;
-  employee_id: string;
+  user_id: string;
   amount: number;
   date: string;
   day_hrs_amount: number;
@@ -44,7 +48,6 @@ export type Revenue = {
 export type LatestInvoice = {
   id: string;
   name: string;
-  image_url: string;
   email: string;
   amount: string;
 };
@@ -56,10 +59,9 @@ export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
 
 export type InvoicesTable = {
   id: string;
-  employee_id: string;
+  user_id: string;
   name: string;
   email: string;
-  image_url: string;
   date: string;
   day_hrs_amount: number;
   eve_hrs_amount:number;
@@ -75,7 +77,6 @@ export type EmployeesTableType = {
   id: string;
   name: string;
   email: string;
-  image_url: string;
   total_invoices: number;
   total_pending: number;
   total_paid: number;
@@ -85,7 +86,6 @@ export type FormattedEmployeesTable = {
   id: string;
   name: string;
   email: string;
-  image_url: string;
   total_invoices: number;
   total_pending: string;
   total_paid: string;
@@ -98,7 +98,7 @@ export type EmployeeField = {
 
 export type InvoiceForm = {
   id: string;
-  employee_id: string;
+  user_id: string;
   day_hrs_amount: number;
   eve_hrs_amount:number;
   days:number;

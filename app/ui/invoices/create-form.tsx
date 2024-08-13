@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EmployeeField, Settings } from "@/app/lib/definitions";
+import { EmployeeField, Settings, UserField } from "@/app/lib/definitions";
 import { createInvoice } from "@/app/lib/actions";
 import {
   CheckIcon,
@@ -14,19 +14,27 @@ import Link from "next/link";
 import { Button } from "@/app/ui/button";
 
 export default function CreateInvoiceForm({
-  employees,
   settings,
+  users,
 }: {
-  employees: EmployeeField[];
   settings: Settings | null;
+  users: UserField[];
 }) {
   const [formData, setFormData] = useState({
-    employeeId: "",
+    userId: "",
     day_hrs_amount: "",
     eve_hrs_amount: "",
     days: "",
     meetings: "",
   });
+
+  // const [formData1, setFormData1] = useState({
+  //   userId: "",
+  //   // day_hrs_amount: "",
+  //   // eve_hrs_amount: "",
+  //   // days: "",
+  //   // meetings: "",
+  // });
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -34,7 +42,7 @@ export default function CreateInvoiceForm({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "employeeId" ? value : parseFloat(value) || 0,
+      [name]: name === "userId" ? value : parseFloat(value) || 0,
     }));
   };
 
@@ -51,25 +59,25 @@ export default function CreateInvoiceForm({
   return (
     <form action={createInvoice}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* Employee Name */}
+        {/* User Name */}
         <div className="mb-4">
           <label htmlFor="employee" className="mb-2 block text-sm font-medium">
-            Choose employee
+            Choose User
           </label>
           <div className="relative">
             <select
-              id="employee"
-              name="employeeId"
+              id="user"
+              name="userId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              value={formData.employeeId}
+              value={formData.userId}
               onChange={handleInputChange}
             >
               <option value="" disabled>
-                Select a employee
+                Select User
               </option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>
-                  {employee.name}
+              {users && users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
                 </option>
               ))}
             </select>

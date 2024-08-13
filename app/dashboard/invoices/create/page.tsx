@@ -1,9 +1,9 @@
 import Form from '@/app/ui/invoices/create-form';
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchEmployees, fetchSettings  } from '@/app/lib/data';
+import { fetchUsers, fetchSettings  } from '@/app/lib/data';
  
 export default async function Page() {
-  const employees = await fetchEmployees();
+  const users = await fetchUsers();
   const settings = await fetchSettings();
   return (
     <main>
@@ -17,7 +17,7 @@ export default async function Page() {
           },
         ]}
       />
-      <Form employees={employees} settings={settings} />
+      <Form users={users} settings={settings} />
     </main>
   );
 }

@@ -31,7 +31,7 @@ export default async function Page() {
         <Card title="Rejected" value={totalRejectedInvoices} type="rejected" />
         <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
         <Card
-          title="Total Employees"
+          title="Total Staff"
           value={numberOfEmployees}
           type="employees"
         />
