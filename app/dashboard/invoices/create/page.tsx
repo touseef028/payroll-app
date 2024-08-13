@@ -2,7 +2,7 @@ import Form from '@/app/ui/invoices/create-form';
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 import { fetchUsers, fetchSettings  } from '@/app/lib/data';
  
-export default async function Page() {
+export default async function Page({ query }: { query: string }) {
   const users = await fetchUsers();
   const settings = await fetchSettings();
   return (
