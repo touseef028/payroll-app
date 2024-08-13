@@ -95,7 +95,6 @@ export default function DashboardSkeleton() {
         <CardSkeleton />
       </div>
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
-        <RevenueChartSkeleton />
         <LatestInvoicesSkeleton />
       </div>
     </>
@@ -180,13 +179,16 @@ export function InvoicesTableSkeleton() {
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Employee
+                  Staff
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Email
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Amount
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Expense
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Date

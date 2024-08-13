@@ -26,13 +26,13 @@ export default async function InvoicesTable({
                 <div className="flex items-center justify-between border-b pb-4">
                   <div>
                     <div className="mb-2 flex items-center">
-                      <Image
+                      {/* <Image
                         src={invoice.image_url}
                         className="mr-2 rounded-full"
                         width={28}
                         height={28}
                         alt={`${invoice.name}'s profile picture`}
-                      />
+                      /> */}
                       <p>{invoice.name}</p>
                     </div>
                     <p className="text-sm text-gray-500">{invoice.email}</p>
@@ -42,7 +42,7 @@ export default async function InvoicesTable({
                 <div className="flex w-full items-center justify-between pt-4">
                   <div>
                     <p className="text-xl font-medium">
-                      {formatCurrency(invoice.amount)}
+                      {formatCurrency(invoice.day_hrs_amount + invoice.eve_hrs_amount + invoice.days + invoice.meetings)}
                     </p>
                     <p>{formatDateToLocal(invoice.date)}</p>
                   </div>
@@ -58,13 +58,16 @@ export default async function InvoicesTable({
             <thead className="rounded-lg text-left text-sm font-normal">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Employee
+                  Staff
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Email
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Amount
+                </th>
+                <th scope="col" className="px-3 py-5 font-medium">
+                  Expense
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Date
@@ -85,13 +88,13 @@ export default async function InvoicesTable({
                 >
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex items-center gap-3">
-                      <Image
+                      {/* <Image
                         src={invoice.image_url}
                         className="rounded-full"
                         width={28}
                         height={28}
                         alt={`${invoice.name}'s profile picture`}
-                      />
+                      /> */}
                       <p>{invoice.name}</p>
                     </div>
                   </td>
@@ -100,6 +103,9 @@ export default async function InvoicesTable({
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {formatCurrency(invoice.amount)}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    {formatCurrency(invoice.expenses)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {formatDateToLocal(invoice.date)}
