@@ -145,6 +145,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     meetings,
     status,
     expenses,
+    month,
   } = UpdateInvoice.parse({
     userId: formData.get("userId"),
     amount: formData.get("amount"),
@@ -154,6 +155,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     days: formData.get("days"),
     meetings: formData.get("meetings"),
     expenses: formData.get("expenses"),
+    month: formData.get("month"),
   });
   // const totalAmount = day_hrs_amount + eve_hrs_amount + days + meetings;
   // const amountInCents = totalAmount * 100;

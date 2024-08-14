@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { updateInvoice } from "@/app/lib/actions";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function EditInvoiceForm({
   invoice,
@@ -22,7 +23,15 @@ export default function EditInvoiceForm({
   settings: Settings | null;
 }) {
   const [totalAmount, setTotalAmount] = useState(invoice.amount);
+  const now = new Date();
+  const year = now.getFullYear();
+  let month = now.getMonth();
 
+  if (now.getDate() >= 25) {
+    month += 1;
+  }
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
   if (!settings) return null;
 
@@ -42,6 +51,30 @@ export default function EditInvoiceForm({
   return (
     <form action={updateInvoiceWithId}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
+        <div className="mb-4">
+          <div className="flex items-center">
+            <label
+              htmlFor="month"
+              className="text-lg font-bold mr-4 whitespace-nowrap"
+            >
+              Month
+            </label>
+            <select
+              id="month"
+              name="month"
+              className="w-48 cursor-pointer rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
+              defaultValue={currentMonth}
+              required
+            >
+              <option value={currentMonth}>
+                {new Date(currentMonth).toLocaleString("default", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </option>
+            </select>
+          </div>
+        </div>
         {/* Employee Name */}
         <div className="mb-4">
           <label htmlFor="employee" className="mb-2 block text-sm font-medium">
@@ -57,11 +90,12 @@ export default function EditInvoiceForm({
               <option value="" disabled>
                 Select a employee
               </option>
-              {users && users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
+              {users &&
+                users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
             </select>
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
@@ -228,11 +262,14 @@ export default function EditInvoiceForm({
             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
           />
           {invoice.presignedUrl && (
-            <img
-              src={invoice.presignedUrl}
-              alt="Receipt"
-              className="mt-2 max-w-xs"
-            />
+            <div className="mt-2">
+              <Link
+                href={`/dashboard/invoices/${invoice.id}/receipt`}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                View/Download Receipt
+              </Link>
+            </div>
           )}
         </div>
 
