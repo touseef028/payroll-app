@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { EmployeeField, Settings, UserField } from "@/app/lib/definitions";
 import { createInvoice } from "@/app/lib/actions";
@@ -12,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
+import { useFormState } from "react-dom";
 
 export default function CreateInvoiceForm({
   settings,
@@ -27,14 +27,16 @@ export default function CreateInvoiceForm({
     days: "",
     meetings: "",
   });
+  const [existingInvoice, setExistingInvoice] = useState(false);
+  const now = new Date();
+  const year = now.getFullYear();
+  let month = now.getMonth();
 
-  // const [formData1, setFormData1] = useState({
-  //   userId: "",
-  //   // day_hrs_amount: "",
-  //   // eve_hrs_amount: "",
-  //   // days: "",
-  //   // meetings: "",
-  // });
+  if (now.getDate() >= 25) {
+    month += 1;
+  }
+
+  const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -59,6 +61,30 @@ export default function CreateInvoiceForm({
   return (
     <form action={createInvoice}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
+        <div className="mb-4">
+          <div className="flex items-center">
+            <label
+              htmlFor="month"
+              className="text-lg font-bold mr-4 whitespace-nowrap"
+            >
+              Month
+            </label>
+            <select
+              id="month"
+              name="month"
+              className="w-48 cursor-pointer rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
+              defaultValue={currentMonth}
+              required
+            >
+              <option value={currentMonth}>
+                {new Date(currentMonth).toLocaleString("default", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </option>
+            </select>
+          </div>
+        </div>
         {/* User Name */}
         <div className="mb-4">
           <label htmlFor="employee" className="mb-2 block text-sm font-medium">
@@ -75,11 +101,12 @@ export default function CreateInvoiceForm({
               <option value="" disabled>
                 Select User
               </option>
-              {users && users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
+              {users &&
+                users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
             </select>
           </div>
         </div>
@@ -153,21 +180,6 @@ export default function CreateInvoiceForm({
             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
           />
         </div>
-
-        {/* Total Amount */}
-        {/* <div className="mb-4">
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
-            Total Amount
-          </label>
-          <input
-            id="amount"
-            name="amount"
-            type="number"
-            value={calculateTotal()}
-            readOnly
-            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-          />
-        </div> */}
 
         <div className="mb-4">
           <div className="relative mt-2 rounded-md bg-gray-100 p-4">

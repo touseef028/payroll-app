@@ -191,7 +191,7 @@ export function InvoicesTableSkeleton() {
                   Expense
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Date
+                  Month
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Status

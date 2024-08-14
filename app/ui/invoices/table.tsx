@@ -1,8 +1,8 @@
-import Image from 'next/image';
-import { UpdateInvoice, DeleteInvoice } from '@/app/ui/invoices/buttons';
-import InvoiceStatus from '@/app/ui/invoices/status';
-import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
-import { fetchFilteredInvoices } from '@/app/lib/data';
+import Image from "next/image";
+import { UpdateInvoice, DeleteInvoice } from "@/app/ui/invoices/buttons";
+import InvoiceStatus from "@/app/ui/invoices/status";
+import { formatDateToLocal, formatCurrency } from "@/app/lib/utils";
+import { fetchFilteredInvoices } from "@/app/lib/data";
 
 export default async function InvoicesTable({
   query,
@@ -42,7 +42,12 @@ export default async function InvoicesTable({
                 <div className="flex w-full items-center justify-between pt-4">
                   <div>
                     <p className="text-xl font-medium">
-                      {formatCurrency(invoice.day_hrs_amount + invoice.eve_hrs_amount + invoice.days + invoice.meetings)}
+                      {formatCurrency(
+                        invoice.day_hrs_amount +
+                          invoice.eve_hrs_amount +
+                          invoice.days +
+                          invoice.meetings
+                      )}
                     </p>
                     <p>{formatDateToLocal(invoice.date)}</p>
                   </div>
@@ -70,7 +75,7 @@ export default async function InvoicesTable({
                   Expense
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
-                  Date
+                  Month
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Status
@@ -108,7 +113,10 @@ export default async function InvoicesTable({
                     {formatCurrency(invoice.expenses)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {formatDateToLocal(invoice.date)}
+                    {new Date(invoice.date).toLocaleString("default", {
+                      month: "long",
+                      year: "numeric",
+                    })}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     <InvoiceStatus status={invoice.status} />

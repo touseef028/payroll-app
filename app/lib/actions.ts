@@ -7,10 +7,14 @@ import { fetchSettings } from "./data";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
+import { error } from "console";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION ?? undefined,
@@ -32,6 +36,7 @@ const FormSchema = z.object({
   date: z.string(),
   receipt_url: z.string().optional(),
   expenses: z.coerce.number(),
+  month: z.string(),
 });
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
@@ -46,6 +51,7 @@ export async function createInvoice(formData: FormData) {
     meetings,
     status,
     expenses,
+    month,
   } = CreateInvoice.parse({
     userId: formData.get("userId"),
     amount: formData.get("amount"),
@@ -55,6 +61,7 @@ export async function createInvoice(formData: FormData) {
     days: formData.get("days"),
     meetings: formData.get("meetings"),
     expenses: formData.get("expenses"),
+    month: formData.get("month"),
   });
   const settings = await fetchSettings();
   if (!settings) {
@@ -67,7 +74,7 @@ export async function createInvoice(formData: FormData) {
   const daysInCents = days * 100;
   const meetingsInCents = meetings * 100;
   const expensesInCents = expenses * 100;
-  const date = new Date().toISOString().split("T")[0];
+  const date = new Date(month).toISOString().split("T")[0];
 
   const totalAmount =
     day_hrs_amount * settings.dayTimeRate +
@@ -92,6 +99,20 @@ export async function createInvoice(formData: FormData) {
 
     await s3Client.send(new PutObjectCommand(uploadParams));
     receiptUrl = `${fileName}`;
+  }
+
+  const existingInvoice = await sql`
+    SELECT i.id
+    FROM invoices i
+    JOIN users u ON i.user_id = u.id
+    WHERE i.user_id = ${userId}
+    AND u.user_type = 'Staff'
+    AND DATE_TRUNC('month', i.date) = DATE_TRUNC('month', ${date}::date)
+  `;
+  // console.log("existingInvoice---->", existingInvoice);
+
+  if (existingInvoice.rows.length > 0) {
+    throw new Error('Staff members can only create one invoice per month');
   }
 
   try {
@@ -158,7 +179,7 @@ export async function updateInvoice(id: string, formData: FormData) {
   const amountInCents = Math.round(totalAmount * 100);
 
   const file = formData.get("receipt") as File;
-  let receiptUrl = formData.get("existing_receipt_url") as string || null;
+  let receiptUrl = (formData.get("existing_receipt_url") as string) || null;
 
   if (file.size > 0) {
     const fileExtension = file.name.split(".").pop();
@@ -207,7 +228,9 @@ export async function deleteInvoice(id: string) {
 }
 
 export async function updateSettings(formData: FormData) {
-  const { dayTimeRate, eveRate, dayRate, meetingRate } = Object.fromEntries(formData) as {
+  const { dayTimeRate, eveRate, dayRate, meetingRate } = Object.fromEntries(
+    formData
+  ) as {
     dayTimeRate: string;
     eveRate: string;
     dayRate: string;
@@ -217,7 +240,9 @@ export async function updateSettings(formData: FormData) {
   try {
     await sql`
         UPDATE settings
-        SET daytime_rate = ${Number(dayTimeRate)}, eve_rate = ${Number(eveRate)}, day_rate = ${Number(dayRate)}, meeting_rate = ${Number(meetingRate)}
+        SET daytime_rate = ${Number(dayTimeRate)}, eve_rate = ${Number(
+      eveRate
+    )}, day_rate = ${Number(dayRate)}, meeting_rate = ${Number(meetingRate)}
       `;
   } catch (error) {
     return { message: "Database Error: Failed to Update Settings." };
@@ -268,7 +293,7 @@ export async function createUser(formData: FormData) {
       site: formData.get("site"),
       password: formData.get("password"),
     });
-  
+
   if (!password) {
     throw new Error("Password is required");
   }

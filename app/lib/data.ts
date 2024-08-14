@@ -13,6 +13,7 @@ import {
 import { formatCurrency } from "./utils";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { auth } from "@/auth";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION!,
@@ -29,7 +30,7 @@ export async function generatePresignedUrl(key: string) {
   });
   try {
     const result = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-    console.log("Generated presigned URL:", result);
+    // console.log("Generated presigned URL:", result);
     return result;
   } catch (error) {
     console.error("Failed to generate presigned URL:", error);
@@ -337,3 +338,20 @@ export async function fetchUserById(id:string) {
   }
 }
 
+export async function checkExistingInvoice(month: string) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
+  const existingInvoice = await sql`
+    SELECT id
+    FROM invoices
+    WHERE user_id = ${userId}
+    AND (SELECT user_type FROM users WHERE id = ${userId}) = 'Staff'
+    AND DATE_TRUNC('month', date) = DATE_TRUNC('month', ${month}::date)
+  `;
+  return existingInvoice.rows.length > 0;
+}
