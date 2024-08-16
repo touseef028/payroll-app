@@ -7,14 +7,13 @@ import {
   LatestInvoiceRaw,
   Settings,
   Revenue,
-  User,
   UserField,
 } from "./definitions";
 import { formatCurrency } from "./utils";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import type { User } from "@/app/lib/definitions";
 import { auth } from "@/auth";
-
 const s3Client = new S3Client({
   region: process.env.AWS_REGION!,
   credentials: {
@@ -22,6 +21,27 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   },
 });
+
+export async function fetchCurrentUser() {
+  const { user } = await auth();
+
+  if (!user || !user.email) {
+    return null;
+  }
+
+  try {
+    const dbUser = await sql`
+      SELECT id, name, email, user_type
+      FROM users
+      WHERE email = ${user.email}
+    `;
+
+    return dbUser.rows[0];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch the current user.");
+  }
+}
 
 export async function generatePresignedUrl(key: string) {
   const command = new GetObjectCommand({
@@ -149,6 +169,28 @@ export async function fetchFilteredInvoices(
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch invoices.");
+  }
+}
+
+export async function fetchMonthlyInvoiceStatus() {
+  
+  try {
+    const result = await sql`
+      SELECT
+        CASE
+          WHEN COUNT(*) FILTER (WHERE status = 'pending') > 0 THEN 'In Progress'
+          WHEN COUNT(*) FILTER (WHERE status = 'approved') > 0
+              AND COUNT(*) FILTER (WHERE status IN ('pending', 'rejected')) = 0 THEN 'APPROVED'
+          WHEN COUNT(*) FILTER (WHERE status = 'rejected') > 0 THEN 'In Progress'
+          ELSE 'SUBMITTED'
+        END AS overall_status
+      FROM invoices
+      WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+    `;
+    return result.rows[0].overall_status;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch monthly invoice status.");
   }
 }
 
@@ -323,7 +365,7 @@ export async function fetchFilteredUsers(query: string, currentPage: number) {
   }
 }
 
-export async function fetchUserById(id:string) {
+export async function fetchUserById(id: string) {
   try {
     const users = await sql<User>`
       SELECT *
@@ -331,17 +373,17 @@ export async function fetchUserById(id:string) {
       WHERE
        id= ${id}
     `;
-    return users.rows?.length? users.rows[0]:null;
+    return users.rows?.length ? users.rows[0] : null;
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch users.");
   }
 }
 
-export async function checkExistingInvoice(month: string) {
+export async function checkExistingInvoice() {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) {
     throw new Error("User not authenticated");
   }
@@ -351,7 +393,7 @@ export async function checkExistingInvoice(month: string) {
     FROM invoices
     WHERE user_id = ${userId}
     AND (SELECT user_type FROM users WHERE id = ${userId}) = 'Staff'
-    AND DATE_TRUNC('month', date) = DATE_TRUNC('month', ${month}::date)
+    AND DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
   `;
   return existingInvoice.rows.length > 0;
 }

@@ -4,7 +4,7 @@ import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { fetchSettings } from "./data";
-import { signIn } from "@/auth";
+import { auth, signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
 import {
@@ -112,7 +112,7 @@ export async function createInvoice(formData: FormData) {
   // console.log("existingInvoice---->", existingInvoice);
 
   if (existingInvoice.rows.length > 0) {
-    throw new Error('Staff members can only create one invoice per month');
+    throw new Error("Staff members can only create one invoice per month");
   }
 
   try {
@@ -388,4 +388,40 @@ export async function updateUser(id: string, formData: FormData) {
 export async function deleteUser(id: string) {
   await sql`DELETE FROM users WHERE id = ${id}`;
   revalidatePath("/dashboard/users");
+}
+
+// creating actions for Inovices lisst page
+
+export async function approveAllInvoices() {
+  // const { user } = await auth();
+  // if (user?.user_type !== 'Manager') {
+  //   throw new Error('Not authorized to approve invoices');
+  // }
+
+  await sql`
+    UPDATE invoices
+    SET status = 'approved'
+    WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+    AND status IN ('pending', 'rejected')
+  `;
+
+  revalidatePath('/dashboard/invoices');
+}
+
+export async function resubmitInvoices() {
+  await sql`
+    UPDATE invoices
+    SET status = 'pending'
+    WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+  `;
+  revalidatePath("/dashboard/invoices");
+}
+
+export async function submitInvoices() {
+  await sql`
+    UPDATE invoices
+    SET status = 'Approved'
+    WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+  `;
+  revalidatePath("/dashboard/invoices");
 }
