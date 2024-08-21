@@ -43,34 +43,10 @@ export default async function InvoicesTable({
       <div className="mt-6 flow-root">
         {user &&
           (user.user_type === "Manager" || user.user_type === "Accountant") && (
-            <div className="mb-4">
-              <div className="flex items-center">
-                <label
-                  htmlFor="month"
-                  className="text-lg font-bold mr-4 whitespace-nowrap"
-                >
-                  Payroll Period
-                </label>
-                <select
-                  id="month"
-                  name="month"
-                  className="w-48 cursor-pointer rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
-                  defaultValue={currentMonth}
-                  required
-                >
-                  <option value={currentMonth}>
-                    {new Date(currentMonth).toLocaleString("default", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </option>
-                </select>
-              </div>
-            </div>
-          )}
-        {user &&
-          (user.user_type === "Manager" || user.user_type === "Accountant") && (
-            <MonthlyStatusBarClient status={monthlyStatus} userType={user.user_type} />
+            <MonthlyStatusBarClient
+              status={monthlyStatus}
+              userType={user.user_type}
+            />
           )}
       </div>
       <div className="inline-block min-w-full align-middle">

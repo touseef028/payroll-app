@@ -13,9 +13,43 @@ export function MonthlyStatusBarClient({
   status: string;
   userType: string;
 }) {
+  const now = new Date();
+  const year = now.getFullYear();
+  let month = now.getMonth();
+
+  if (now.getDate() >= 25) {
+    month += 1;
+  }
+
+  const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+
   return (
     <div className="mb-4 flex justify-between items-center bg-gray-100 p-4 rounded-lg">
-      <div className="font-bold">Overall Status: {status}</div>
+      <div className="mb-4">
+        <div className="flex items-center">
+          <label
+            htmlFor="month"
+            className="text-lg font-bold mr-4 whitespace-nowrap"
+          >
+            Payroll Period
+          </label>
+          <select
+            id="month"
+            name="month"
+            className="w-48 cursor-pointer rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
+            defaultValue={currentMonth}
+            required
+          >
+            <option value={currentMonth}>
+              {new Date(currentMonth).toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+              })}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div className="text-lg font-bold mr-4 whitespace-nowrap"> Status: {status}</div>
       <div className="flex gap-2">
         {userType === "Manager" && status === "In Progress" && (
           <button
