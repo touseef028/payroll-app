@@ -9,7 +9,6 @@ import {
 import { User } from "@/app/lib/definitions";
 import InvoiceStatus from "./status";
 import { MonthlyStatusBarClient } from "./MonthlyStatusBarClient";
-// If User is not exported from @/app/lib/definitions, you may need to update the import path or ensure it's exported from the correct file.import { approveAllInvoices, resubmitInvoices, submitInvoices } from "@/app/lib/actions";
 import {
   approveAllInvoices,
   resubmitInvoices,
@@ -25,18 +24,20 @@ export default async function InvoicesTable({
 }) {
   const now = new Date();
   const year = now.getFullYear();
-  let month = now.getMonth();
-
-  if (now.getDate() >= 25) {
-    month += 1;
-  }
+  const month = now.getMonth(); // 0-based index for months
 
   const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
-  // console.log("invoices is ---->", currentMonth);
+  const nextMonth = month === 11 ? `${year + 1}-01` : `${year}-${String(month + 2).padStart(2, "0")}`;
+
   const invoices = await fetchFilteredInvoices(query, currentPage);
   const monthlyStatus = await fetchMonthlyInvoiceStatus();
   const user = await fetchCurrentUser();
-  // console.log("invoices is ---->", monthlyStatus);
+
+  // Filter invoices based on the current and next month
+  const filteredInvoices = invoices.filter((invoice) => {
+    const invoiceMonth = new Date(invoice.date).toISOString().slice(0, 7);
+    return invoiceMonth === currentMonth || invoiceMonth === nextMonth;
+  });
 
   return (
     <div className="mt-6 flow-root">
@@ -52,7 +53,7 @@ export default async function InvoicesTable({
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
           <div className="md:hidden">
-            {invoices?.map((invoice) => (
+            {filteredInvoices?.map((invoice) => (
               <div
                 key={invoice.id}
                 className="mb-2 w-full rounded-md bg-white p-4"
@@ -113,7 +114,7 @@ export default async function InvoicesTable({
               </tr>
             </thead>
             <tbody className="bg-white">
-              {invoices?.map((invoice) => (
+              {filteredInvoices?.map((invoice) => (
                 <tr
                   key={invoice.id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"

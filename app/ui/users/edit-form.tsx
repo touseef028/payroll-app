@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@/app/lib/definitions";
+import { User, LocField } from "@/app/lib/definitions";
 import {
   UserCircleIcon,
   AtSymbolIcon,
@@ -14,7 +14,13 @@ import { Button } from "@/app/ui/button";
 import { updateUser } from "@/app/lib/actions";
 import { useState } from "react";
 
-export default function EditUserForm({ user }: { user: User }) {
+export default function EditUserForm({
+  user,
+  locs,
+}: {
+  user: User;
+  locs: LocField[];
+}) {
   const [showPasswordField, setShowPasswordField] = useState(false);
   const updateUserWithId = updateUser.bind(null, user.id);
 
@@ -142,19 +148,27 @@ export default function EditUserForm({ user }: { user: User }) {
 
         {/* Site */}
         <div className="mb-4">
-          <label htmlFor="site" className="mb-2 block text-sm font-medium">
-            Site
+          <label htmlFor="employee" className="mb-2 block text-sm font-medium">
+            Choose LOC
           </label>
           <div className="relative">
-            <input
-              id="site"
+            <select
+              id="loc"
               name="site"
-              type="text"
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               defaultValue={user.site}
-              placeholder="Enter site"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-            />
-            <MapPinIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+            >
+              <option value="" disabled>
+                Select LOC
+              </option>
+              {locs &&
+                locs.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+            </select>
+            <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
         </div>
 

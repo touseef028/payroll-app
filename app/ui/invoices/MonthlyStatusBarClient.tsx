@@ -15,13 +15,10 @@ export function MonthlyStatusBarClient({
 }) {
   const now = new Date();
   const year = now.getFullYear();
-  let month = now.getMonth();
-
-  if (now.getDate() >= 25) {
-    month += 1;
-  }
+  const month = now.getMonth(); // 0-based index for months
 
   const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+  const nextMonth = month === 11 ? `${year + 1}-01` : `${year}-${String(month + 2).padStart(2, "0")}`;
 
   return (
     <div className="mb-4 flex justify-between items-center bg-gray-100 p-4 rounded-lg">
@@ -42,6 +39,12 @@ export function MonthlyStatusBarClient({
           >
             <option value={currentMonth}>
               {new Date(currentMonth).toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+              })}
+            </option>
+            <option value={nextMonth}>
+              {new Date(nextMonth).toLocaleString("default", {
                 month: "long",
                 year: "numeric",
               })}

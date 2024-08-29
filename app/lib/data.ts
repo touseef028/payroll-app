@@ -8,6 +8,8 @@ import {
   Settings,
   Revenue,
   UserField,
+  Loc,
+  LocField,
 } from "./definitions";
 import { formatCurrency } from "./utils";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
@@ -173,7 +175,6 @@ export async function fetchFilteredInvoices(
 }
 
 export async function fetchMonthlyInvoiceStatus() {
-  
   try {
     const result = await sql`
       SELECT
@@ -345,17 +346,56 @@ export async function fetchSettings(): Promise<Settings | null> {
   }
 }
 
+// export async function fetchFilteredUsers(query: string, currentPage: number) {
+//   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+//   try {
+//     const users = await sql<User>`
+//       SELECT
+//         users.id,
+//         users.name,
+//         users.email,
+//         users.date_of_birth,
+//         users.phone_number,
+//         users.user_type
+//       FROM users
+//       WHERE
+//         users.name ILIKE ${`%${query}%`} OR
+//         users.email ILIKE ${`%${query}%`} OR
+//         users.phone_number ILIKE ${`%${query}%`} OR
+//         users.user_type ILIKE ${`%${query}%`}
+//       ORDER BY users.name ASC
+//       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+//     `;
+//     return users.rows;
+//   } catch (error) {
+//     console.error("Database Error:", error);
+//     throw new Error("Failed to fetch users.");
+//   }
+// }
+
 export async function fetchFilteredUsers(query: string, currentPage: number) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
     const users = await sql<User>`
-      SELECT *
+      SELECT
+        users.id,
+        users.name,
+        users.email,
+        users.date_of_birth,
+        users.phone_number,
+        users.user_type,
+        locs.name AS site_name
       FROM users
+      LEFT JOIN locs ON CAST(users.site AS INTEGER) = locs.id
       WHERE
-        name ILIKE ${`%${query}%`} OR
-        email ILIKE ${`%${query}%`}
-      ORDER BY name ASC
+        users.name ILIKE ${`%${query}%`} OR
+        users.email ILIKE ${`%${query}%`} OR
+        users.phone_number ILIKE ${`%${query}%`} OR
+        users.user_type ILIKE ${`%${query}%`} OR
+        locs.name ILIKE ${`%${query}%`}
+      ORDER BY users.name ASC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
     return users.rows;
@@ -364,6 +404,7 @@ export async function fetchFilteredUsers(query: string, currentPage: number) {
     throw new Error("Failed to fetch users.");
   }
 }
+
 
 export async function fetchUserById(id: string) {
   try {
@@ -396,4 +437,73 @@ export async function checkExistingInvoice() {
     AND DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
   `;
   return existingInvoice.rows.length > 0;
+}
+
+// -------------- LOCS --------------
+
+export async function fetchFilteredLocs(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const locs = await sql<Loc>`
+      SELECT
+        locs.id,
+        locs.name,
+        locs.address,
+        locs.loc_meeting_rate,
+        locs.day_time_rate,
+        locs.eve_rate,
+        locs.day_rate,
+        locs.meeting_rate,
+        locs.admin_rate,
+        locs.meeting_f2f,
+        locs.status,
+        locs.inactive_date
+      FROM locs
+      WHERE
+        locs.name ILIKE ${`%${query}%`} OR
+        locs.address ILIKE ${`%${query}%`} OR
+        locs.status ILIKE ${`%${query}%`}
+      ORDER BY locs.name ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+    return locs.rows;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch LOCs.");
+  }
+}
+
+export async function fetchLocById(id: string) {
+  try {
+    const locs = await sql<Loc>`
+      SELECT *
+      FROM locs
+      WHERE
+       id= ${id}
+    `;
+    return locs.rows?.length ? locs.rows[0] : null;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to locs.");
+  }
+}
+
+export async function fetchLocs(query: string) {
+  try {
+    const data = await sql<LocField>`
+      SELECT
+        id,
+        name
+      FROM locs
+      WHERE status = 'active'
+      ORDER BY name ASC
+    `;
+
+    const locs = data.rows;
+    return locs;
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch all locs.");
+  }
 }

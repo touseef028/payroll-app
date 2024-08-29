@@ -13,6 +13,26 @@ export type User = {
   user_type: string;
 };
 
+export type Loc = {
+  id: string;
+  name: string;
+  address: string;
+  loc_meeting_rate: number;
+  day_time_rate: number;
+  eve_rate: number;
+  day_rate: number;
+  meeting_rate: number;
+  admin_rate: number;
+  meeting_f2f: number;
+  status:  'active' | 'inactive';
+  inactive_date: string;
+};
+
+export type LocField = {
+  id: string;
+  name: string;
+};
+
 export type UserField = {
   id: string;
   name: string;

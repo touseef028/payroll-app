@@ -13,8 +13,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@/app/ui/button";
 import { createUser } from "@/app/lib/actions";
+import { LocField } from "@/app/lib/definitions";
 
-export default function CreateUserForm() {
+export default function CreateUserForm({ locs }: { locs: LocField[] }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,9 +23,10 @@ export default function CreateUserForm() {
     phone_number: "",
     date_of_birth: "",
     site: "",
+    user_type: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -132,19 +134,27 @@ export default function CreateUserForm() {
 
         {/* Site */}
         <div className="mb-4">
-          <label htmlFor="site" className="mb-2 block text-sm font-medium">
-            Site
+          <label htmlFor="loc" className="mb-2 block text-sm font-medium">
+            Choose LOC
           </label>
           <div className="relative">
-            <input
-              id="site"
+            <select
+              id="loc"
               name="site"
-              type="text"
-              placeholder="Enter site"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              value={formData.site}
               onChange={handleInputChange}
-            />
-            <MapPinIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+            >
+              <option value="" disabled>
+                Select LOC
+              </option>
+              {locs &&
+                locs.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
 
@@ -158,6 +168,8 @@ export default function CreateUserForm() {
                   id={`user_type_${type.toLowerCase()}`}
                   name="user_type"
                   value={type}
+                  onChange={handleInputChange}
+                  checked={formData.user_type === type}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <label

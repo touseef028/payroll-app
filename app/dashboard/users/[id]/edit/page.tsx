@@ -1,12 +1,12 @@
 import Form from '@/app/ui/users/edit-form';
 import Breadcrumbs from '@/app/ui/users/breadcrumbs';
-import { fetchUserById } from '@/app/lib/data';
+import { fetchUserById, fetchLocs } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 
 export default async function Page({ params }: { params: { id: string } }) {
   const id = params.id;
   const user = await fetchUserById(id);
-
+  const locs = await fetchLocs('');
   if (!user) {
     notFound();
   }
@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           },
         ]}
       />
-      <Form user={user} />
+      <Form user={user} locs={locs} />
     </main>
   );
 }

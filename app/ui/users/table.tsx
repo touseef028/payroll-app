@@ -3,6 +3,9 @@ import { UpdateUser, DeleteUser } from "@/app/ui/users/buttons";
 import { formatDateToLocal } from "@/app/lib/utils";
 import Search from "../search";
 import { lusitana } from "../fonts";
+import {
+  fetchFilteredLocs,
+} from "@/app/lib/data";
 
 export default function UsersTable({
   users,
@@ -12,11 +15,15 @@ export default function UsersTable({
     id: string;
     name: string;
     email: string;
-    date_of_birth: string;
     phone_number: string;
-    site: string;
+    site_name: string;
   }>;
-}) {
+
+}) 
+
+
+
+{
   return (
     <div className="w-full">
       <div className="mt-6 flow-root">
@@ -72,7 +79,7 @@ export default function UsersTable({
                     <td className="whitespace-nowrap px-3 py-3">
                       {user.phone_number}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3">{user.site}</td>
+                    <td className="whitespace-nowrap px-3 py-3">{user.site_name}</td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {user.user_type}
                     </td>

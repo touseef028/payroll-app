@@ -279,7 +279,7 @@ const UserSchema = z.object({
   email: z.string().email(),
   date_of_birth: z.string(),
   phone_number: z.string(),
-  site: z.string(),
+  site: z.string().nullable(),
   password: z.string().nullable().optional(),
 });
 
@@ -329,10 +329,10 @@ export async function updateUser(id: string, formData: FormData) {
       email: formData.get("email"),
       phone_number: formData.get("phone_number"),
       date_of_birth: formData.get("date_of_birth"),
-      site: formData.get("site"),
+      site: formData.get("site") || null,
       password: formData.get("password"),
     });
-
+  console.log("updateFields FormDATA----->", formData);
   const user_type = formData.get("user_type") as string;
 
   const updateFields: {
@@ -340,7 +340,7 @@ export async function updateUser(id: string, formData: FormData) {
     email: string;
     phone_number?: string;
     date_of_birth?: string;
-    site?: string;
+    site?: string | null;
     user_type?: string;
   } = {
     name,
@@ -383,9 +383,7 @@ export async function updateUser(id: string, formData: FormData) {
 
   revalidatePath("/dashboard/users");
   redirect("/dashboard/users");
-}
-
-export async function deleteUser(id: string) {
+}export async function deleteUser(id: string) {
   await sql`DELETE FROM users WHERE id = ${id}`;
   revalidatePath("/dashboard/users");
 }
@@ -405,7 +403,7 @@ export async function approveAllInvoices() {
     AND status IN ('pending', 'rejected')
   `;
 
-  revalidatePath('/dashboard/invoices');
+  revalidatePath("/dashboard/invoices");
 }
 
 export async function resubmitInvoices() {
@@ -424,4 +422,114 @@ export async function submitInvoices() {
     WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
   `;
   revalidatePath("/dashboard/invoices");
+}
+
+// ------ LOCS ---------
+
+export async function deleteLoc(id: string) {
+  await sql`DELETE FROM locs WHERE id = ${id}`;
+  revalidatePath("/dashboard/locs");
+}
+
+const LocSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  address: z.string(),
+  loc_meeting_rate: z.coerce.number(),
+  day_time_rate: z.coerce.number(),
+  eve_rate: z.coerce.number(),
+  day_rate: z.coerce.number(),
+  meeting_rate: z.coerce.number(),
+  admin_rate: z.coerce.number(),
+  meeting_f2f: z.coerce.number(),
+  status: z.enum(["active", "inactive"]).nullable().optional(),
+  inactive_date: z.string().nullable().optional(),
+});
+
+const CreateLoc = LocSchema.omit({ id: true });
+
+export async function createLoc(formData: FormData) {
+  const {
+    name,
+    address,
+    loc_meeting_rate,
+    day_time_rate,
+    eve_rate,
+    day_rate,
+    meeting_rate,
+    admin_rate,
+    meeting_f2f,
+    status,
+    inactive_date,
+  } = CreateLoc.parse({
+    name: formData.get("name"),
+    address: formData.get("address"),
+    loc_meeting_rate: formData.get("loc_meeting_rate"),
+    day_time_rate: formData.get("day_time_rate"),
+    eve_rate: formData.get("eve_rate"),
+    day_rate: formData.get("day_rate"),
+    meeting_rate: formData.get("meeting_rate"),
+    admin_rate: formData.get("admin_rate"),
+    meeting_f2f: formData.get("meeting_f2f"),
+    status: formData.get("status"),
+    inactive_date: formData.get("inactive_date"),
+  });
+
+  const inactiveDate = inactive_date ? inactive_date : null;
+  
+  await sql`
+    INSERT INTO locs (name, address, loc_meeting_rate, day_time_rate, eve_rate, day_rate, meeting_rate, admin_rate, meeting_f2f, status, inactive_date)
+    VALUES (${name}, ${address}, ${loc_meeting_rate}, ${day_time_rate}, ${eve_rate}, ${day_rate}, ${meeting_rate}, ${admin_rate}, ${meeting_f2f}, ${status}, ${inactiveDate})
+  `;
+
+  revalidatePath("/dashboard/locs");
+  redirect("/dashboard/locs");
+}
+
+export async function updateLoc(id: string, formData: FormData) {
+  const {
+    name,
+    address,
+    loc_meeting_rate,
+    day_time_rate,
+    eve_rate,
+    day_rate,
+    meeting_rate,
+    admin_rate,
+    meeting_f2f,
+    status,
+    inactive_date,
+  } = LocSchema.parse({
+    id: String(id),
+    name: formData.get("name"),
+    address: formData.get("address"),
+    loc_meeting_rate: formData.get("loc_meeting_rate"),
+    day_time_rate: formData.get("day_time_rate"),
+    eve_rate: formData.get("eve_rate"),
+    day_rate: formData.get("day_rate"),
+    meeting_rate: formData.get("meeting_rate"),
+    admin_rate: formData.get("admin_rate"),
+    meeting_f2f: formData.get("meeting_f2f"),
+    status: formData.get("status"),
+    inactive_date: formData.get("inactive_date"),
+  });
+  const inactiveDate = inactive_date ? inactive_date : null;
+  await sql`
+      UPDATE locs
+      SET name = ${name},
+          address = ${address},
+          loc_meeting_rate = ${loc_meeting_rate},
+          day_time_rate = ${day_time_rate},
+          eve_rate = ${eve_rate},
+          day_rate = ${day_rate},
+          meeting_rate = ${meeting_rate},
+          admin_rate = ${admin_rate},
+          meeting_f2f = ${meeting_f2f},
+          status = ${status},
+          inactive_date = ${inactiveDate}
+      WHERE id = ${id}
+    `;
+
+  revalidatePath("/dashboard/locs");
+  redirect("/dashboard/locs");
 }
