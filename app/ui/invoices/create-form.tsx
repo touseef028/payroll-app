@@ -83,7 +83,7 @@ export default function CreateInvoiceForm({
     setFormData(prevData => ({
       ...prevData,
       [rowName]: '',
-      [`${rowName}Description`]: ''
+      '[rowName]Description': ''
     }));
   };
 

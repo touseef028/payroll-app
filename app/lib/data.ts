@@ -149,7 +149,7 @@ export async function fetchFilteredInvoices(
       SELECT
         invoices.id,
         invoices.amount,
-        invoices.date,
+        (invoices.date AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/London')::date as date,
         invoices.status,
         invoices.expenses,
         users.name,
@@ -166,7 +166,7 @@ export async function fetchFilteredInvoices(
       ORDER BY invoices.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
-
+    console.log('invocies----.',invoices.rows);
     return invoices.rows;
   } catch (error) {
     console.error("Database Error:", error);
