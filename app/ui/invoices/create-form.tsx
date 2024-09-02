@@ -26,18 +26,39 @@ export default function CreateInvoiceForm({
     eve_hrs_amount: "",
     days: "",
     meetings: "",
+    adminDescription: "",
+    meetingOnline: "",
+    meetingF2F: "",
+    honorarium: "",
+    others: "",
+    expenses: "",
+    admin: "",
+    meetingsDescription: "", // Add this line
+    daytimeDescription: "", // Add this line
+    eveningDescription: "", // Add this line
+    meetingOnlineDescription: "", // Add this line
+    meetingF2FDescription: "", // Add this line
+    honorariumDescription: "", // Add this line
+    othersDescription: "", // Add this line
+    daysDescription: "", // Add this line
+    expensesDescription: "", // Add this line
   });
   const [existingInvoice, setExistingInvoice] = useState(false);
   const now = new Date();
   const year = now.getFullYear();
-  let month = now.getMonth();
-
-  if (now.getDate() >= 25) {
-    month += 1;
-  }
+  const month = now.getMonth();
+  const day = now.getDate();
 
   const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+  const nextMonth =
+    month === 11
+      ? `${year + 1}-01`
+      : `${year}-${String(month + 2).padStart(2, "0")}`;
 
+  let availableMonths = [currentMonth];
+  if (day >= 25) {
+    availableMonths.push(nextMonth);
+  }
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -58,6 +79,14 @@ export default function CreateInvoiceForm({
     );
   };
 
+  const handleRowReset = (rowName: string) => {
+    setFormData(prevData => ({
+      ...prevData,
+      [rowName]: '',
+      [`${rowName}Description`]: ''
+    }));
+  };
+
   return (
     <form action={createInvoice}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
@@ -76,12 +105,14 @@ export default function CreateInvoiceForm({
               defaultValue={currentMonth}
               required
             >
-              <option value={currentMonth}>
-                {new Date(currentMonth).toLocaleString("default", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </option>
+              {availableMonths.map((month) => (
+                <option key={month} value={month}>
+                  {new Date(month).toLocaleString("default", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -110,77 +141,336 @@ export default function CreateInvoiceForm({
             </select>
           </div>
         </div>
+        <div className="mt-6 border rounded-md p-4">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th></th>
+                <th className="text-left">Claim</th>
+                <th className="text-left">Unit</th>
+                <th className="text-left">Total Claim</th>
+                <th className="text-left">Description</th>
+                <th></th> {/* Empty header for reset button column */}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="loc-meetings-row">
+                <td>LOC Meetings</td>
+                <td>
+                  <input
+                    type="number"
+                    name="meetings"
+                    value={formData.meetings}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>No of Meetings</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="meetingsDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("meetings")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="daytime-hours-row">
+                <td>Daytime Hours</td>
+                <td>
+                  <input
+                    type="number"
+                    name="day_hrs_amount"
+                    value={formData.day_hrs_amount}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>Hours</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="daytimeDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("day_hrs_amount")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="evening-hours-row">
+                <td>Evening Hours</td>
+                <td>
+                  <input
+                    type="number"
+                    name="eve_hrs_amount"
+                    value={formData.eve_hrs_amount}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>Hours</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="eveningDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("eve_hrs_amount")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="admin-row">
+                <td>Admin</td>
+                <td>
+                  <input
+                    type="number"
+                    name="admin"
+                    value={formData.admin}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>Hours</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="adminDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("admin")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="meeting-online-row">
+                <td>Meeting Online</td>
+                <td>
+                  <input
+                    type="number"
+                    name="meetingOnline"
+                    value={formData.meetingOnline}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>No of Meetings</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="meetingOnlineDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("meetingOnline")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="meeting-f2f-row">
+                <td>Meeting F2F</td>
+                <td>
+                  <input
+                    type="number"
+                    name="meetingF2F"
+                    value={formData.meetingF2F}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>No of Meetings</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="meetingF2FDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("meetingF2F")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="honorarium-row">
+                <td>Honorarium (Amount)</td>
+                <td>
+                  <input
+                    type="number"
+                    name="honorarium"
+                    value={formData.honorarium}
+                    onChange={handleInputChange}
+                    step="0.01"
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>GBP</td>
+                <td>{formData.honorarium}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="honorariumDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("honorarium")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="others-row">
+                <td>Others (Amount)</td>
+                <td>
+                  <input
+                    type="number"
+                    name="others"
+                    value={formData.others}
+                    onChange={handleInputChange}
+                    step="0.01"
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>GBP</td>
+                <td>{formData.others}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="othersDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("others")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
 
-        {/* Day Time Hours */}
-        <div className="mb-4">
-          <label
-            htmlFor="day_hrs_amount"
-            className="mb-2 block text-sm font-medium"
-          >
-            Daytime Hours
-          </label>
-          <input
-            id="day_hrs_amount"
-            name="day_hrs_amount"
-            type="number"
-            step="0.01"
-            value={formData.day_hrs_amount}
-            onChange={handleInputChange}
-            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-          />
+              <tr className="days-row">
+                <td>Days</td>
+                <td>
+                  <input
+                    type="number"
+                    name="days"
+                    value={formData.days}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>Days</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="daysDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("days")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+              <tr className="expenses-row">
+                <td>Expenses</td>
+                <td>
+                  <input
+                    type="number"
+                    name="expenses"
+                    value={formData.expenses}
+                    onChange={handleInputChange}
+                    step="0.01"
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>GBP</td>
+                <td>{/* Calculate total claim */}</td>
+                <td>
+                  <input
+                    type="text"
+                    name="expensesDescription"
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("expenses")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        {/* Evening Hours */}
-        <div className="mb-4">
-          <label
-            htmlFor="eve_hrs_amount"
-            className="mb-2 block text-sm font-medium"
-          >
-            Evening Hours
-          </label>
-          <input
-            id="eve_hrs_amount"
-            name="eve_hrs_amount"
-            type="number"
-            step="0.01"
-            value={formData.eve_hrs_amount}
-            onChange={handleInputChange}
-            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-          />
-        </div>
-
-        {/* Days */}
-        <div className="mb-4">
-          <label htmlFor="days" className="mb-2 block text-sm font-medium">
-            Days
-          </label>
-          <input
-            id="days"
-            name="days"
-            type="number"
-            step="0.01"
-            value={formData.days}
-            onChange={handleInputChange}
-            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-          />
-        </div>
-
-        {/* Meetings */}
-        <div className="mb-4">
-          <label htmlFor="meetings" className="mb-2 block text-sm font-medium">
-            Meetings
-          </label>
-          <input
-            id="meetings"
-            name="meetings"
-            type="number"
-            step="0.01"
-            value={formData.meetings}
-            onChange={handleInputChange}
-            className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-          />
-        </div>
-
         <div className="mb-4">
           <div className="relative mt-2 rounded-md bg-gray-100 p-4">
             <div className="flex items-center">
@@ -195,7 +485,7 @@ export default function CreateInvoiceForm({
           </div>
         </div>
 
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label htmlFor="expenses" className="mb-2 block text-sm font-medium">
             Expenses
           </label>
@@ -206,7 +496,7 @@ export default function CreateInvoiceForm({
             step="0.01"
             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
           />
-        </div>
+        </div> */}
 
         <div className="mb-4">
           <label htmlFor="receipt" className="mb-2 block text-sm font-medium">

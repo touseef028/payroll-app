@@ -5,6 +5,7 @@ import {
   resubmitInvoices,
   submitInvoices,
 } from "@/app/lib/actions";
+import { useState } from "react";
 
 export function MonthlyStatusBarClient({
   status,
@@ -15,10 +16,19 @@ export function MonthlyStatusBarClient({
 }) {
   const now = new Date();
   const year = now.getFullYear();
-  const month = now.getMonth(); // 0-based index for months
+  const month = now.getMonth();
+  const day = now.getDate();
 
   const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
   const nextMonth = month === 11 ? `${year + 1}-01` : `${year}-${String(month + 2).padStart(2, "0")}`;
+
+  let availableMonths = [currentMonth];
+  if (day >= 25) {
+    availableMonths.push(nextMonth);
+  }
+
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+
 
   return (
     <div className="mb-4 flex justify-between items-center bg-gray-100 p-4 rounded-lg">
@@ -34,21 +44,18 @@ export function MonthlyStatusBarClient({
             id="month"
             name="month"
             className="w-48 cursor-pointer rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
-            defaultValue={currentMonth}
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
             required
           >
-            <option value={currentMonth}>
-              {new Date(currentMonth).toLocaleString("default", {
-                month: "long",
-                year: "numeric",
-              })}
-            </option>
-            <option value={nextMonth}>
-              {new Date(nextMonth).toLocaleString("default", {
-                month: "long",
-                year: "numeric",
-              })}
-            </option>
+            {availableMonths.map((month) => (
+              <option key={month} value={month}>
+                {new Date(month).toLocaleString("default", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </option>
+            ))}
           </select>
         </div>
       </div>

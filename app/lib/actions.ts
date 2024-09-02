@@ -31,6 +31,21 @@ const FormSchema = z.object({
   eve_hrs_amount: z.coerce.number(),
   days: z.coerce.number(),
   meetings: z.coerce.number(),
+  adminDescription: z.string(),
+  meetingOnline: z.coerce.number(),
+  meetingF2F: z.coerce.number(),
+  honorarium: z.coerce.number(),
+  others: z.coerce.number(),
+  admin: z.coerce.number(),
+  meetingsDescription: z.string(),
+  daytimeDescription: z.string(),
+  eveningDescription: z.string(),
+  meetingOnlineDescription: z.string(),
+  meetingF2FDescription: z.string(),
+  honorariumDescription: z.string(),
+  othersDescription: z.string(),
+  daysDescription: z.string(),
+  expensesDescription: z.string(),
   amount: z.coerce.number(),
   status: z.enum(["pending", "approved", "rejected"]),
   date: z.string(),
@@ -44,25 +59,56 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 export async function createInvoice(formData: FormData) {
   const {
     userId,
-    amount,
     day_hrs_amount,
     eve_hrs_amount,
+    admin,
     days,
     meetings,
+    amount,
     status,
-    expenses,
     month,
+    expenses,
+    adminDescription,
+    meetingOnline,
+    meetingF2F,
+    honorarium,
+    others,
+    meetingsDescription,
+    daytimeDescription,
+    eveningDescription,
+    meetingOnlineDescription,
+    meetingF2FDescription,
+    honorariumDescription,
+    othersDescription,
+    daysDescription,
+    expensesDescription,
   } = CreateInvoice.parse({
     userId: formData.get("userId"),
-    amount: formData.get("amount"),
-    status: formData.get("status"),
     day_hrs_amount: formData.get("day_hrs_amount"),
     eve_hrs_amount: formData.get("eve_hrs_amount"),
+    admin: formData.get("admin"),
     days: formData.get("days"),
     meetings: formData.get("meetings"),
-    expenses: formData.get("expenses"),
+    amount: formData.get("amount"),
+    status: formData.get("status"),
     month: formData.get("month"),
+    expenses: formData.get("expenses"),
+    adminDescription: formData.get("adminDescription"),
+    meetingOnline: formData.get("meetingOnline"),
+    meetingF2F: formData.get("meetingF2F"),
+    honorarium: formData.get("honorarium"),
+    others: formData.get("others"),
+    meetingsDescription: formData.get("meetingsDescription"),
+    daytimeDescription: formData.get("daytimeDescription"),
+    eveningDescription: formData.get("eveningDescription"),
+    meetingOnlineDescription: formData.get("meetingOnlineDescription"),
+    meetingF2FDescription: formData.get("meetingF2FDescription"),
+    honorariumDescription: formData.get("honorariumDescription"),
+    othersDescription: formData.get("othersDescription"),
+    daysDescription: formData.get("daysDescription"),
+    expensesDescription: formData.get("expensesDescription"),
   });
+
   const settings = await fetchSettings();
   if (!settings) {
     throw new Error("Failed to fetch settings");
@@ -71,9 +117,14 @@ export async function createInvoice(formData: FormData) {
 
   const day_hrs_amountInCents = day_hrs_amount * 100;
   const eve_hrs_amountInCents = eve_hrs_amount * 100;
+  const adminCents = admin * 100;
   const daysInCents = days * 100;
   const meetingsInCents = meetings * 100;
   const expensesInCents = expenses * 100;
+  const meetingOnlineCents = meetingOnline * 100;
+  const meetingF2FCents = meetingF2F * 100;
+  const honorariumCents = honorarium * 100;
+  const othersCents = others * 100;
   const date = new Date(month).toISOString().split("T")[0];
 
   const totalAmount =
@@ -117,8 +168,9 @@ export async function createInvoice(formData: FormData) {
 
   try {
     await sql`
-      INSERT INTO invoices (user_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date, expenses, receipt_url)
-      VALUES (${userId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl})
+      INSERT INTO invoices (user_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date, expenses, receipt_url, admin_description
+     , meeting_online, meeting_f2f, honorarium, others, meetings_description, daytime_description, evening_description, meeting_online_description, meeting_f2f_description, honorarium_description, others_description, days_description, expenses_description, admin)
+      VALUES (${userId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl}, ${adminDescription}, ${meetingOnlineCents}, ${meetingF2FCents}, ${honorariumCents}, ${othersCents}, ${meetingsDescription}, ${daytimeDescription}, ${eveningDescription}, ${meetingOnlineDescription}, ${meetingF2FDescription}, ${honorariumDescription}, ${othersDescription}, ${daysDescription}, ${expensesDescription}, ${adminCents})
     `;
     console.log("success");
   } catch (error) {
@@ -131,7 +183,6 @@ export async function createInvoice(formData: FormData) {
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
-
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function updateInvoice(id: string, formData: FormData) {
@@ -383,7 +434,8 @@ export async function updateUser(id: string, formData: FormData) {
 
   revalidatePath("/dashboard/users");
   redirect("/dashboard/users");
-}export async function deleteUser(id: string) {
+}
+export async function deleteUser(id: string) {
   await sql`DELETE FROM users WHERE id = ${id}`;
   revalidatePath("/dashboard/users");
 }
@@ -476,7 +528,7 @@ export async function createLoc(formData: FormData) {
   });
 
   const inactiveDate = inactive_date ? inactive_date : null;
-  
+
   await sql`
     INSERT INTO locs (name, address, loc_meeting_rate, day_time_rate, eve_rate, day_rate, meeting_rate, admin_rate, meeting_f2f, status, inactive_date)
     VALUES (${name}, ${address}, ${loc_meeting_rate}, ${day_time_rate}, ${eve_rate}, ${day_rate}, ${meeting_rate}, ${admin_rate}, ${meeting_f2f}, ${status}, ${inactiveDate})
