@@ -6,6 +6,7 @@ import {
   CalculatorIcon,
   DocumentDuplicateIcon,
   BuildingOfficeIcon,
+  CalendarIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -19,6 +20,7 @@ const links = [
   { name: 'Settings', href: '/dashboard/settings', icon: CalculatorIcon },
   { name: 'Users', href: '/dashboard/users', icon: UserGroupIcon },
   { name: 'LOC', href: '/dashboard/locs', icon: BuildingOfficeIcon },
+  { name: 'Period Close', href: '/dashboard/period-close', icon: CalendarIcon },
 ];
 
 export default function NavLinks() {

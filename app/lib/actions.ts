@@ -158,7 +158,6 @@ export async function createInvoice(formData: FormData) {
     JOIN users u ON i.user_id = u.id
     WHERE i.user_id = ${userId}
     AND u.user_type = 'Staff'
-    AND DATE_TRUNC('month', i.date) = DATE_TRUNC('month', ${date}::date)
   `;
   // console.log("existingInvoice---->", existingInvoice);
 

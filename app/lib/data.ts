@@ -149,7 +149,7 @@ export async function fetchFilteredInvoices(
       SELECT
         invoices.id,
         invoices.amount,
-        (invoices.date AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/London')::date as date,
+        invoices.date,
         invoices.status,
         invoices.expenses,
         users.name,
@@ -186,7 +186,6 @@ export async function fetchMonthlyInvoiceStatus() {
           ELSE 'SUBMITTED'
         END AS overall_status
       FROM invoices
-      WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
     `;
     return result.rows[0].overall_status;
   } catch (error) {

@@ -40,7 +40,7 @@ export default async function InvoicesTable({
   const filteredInvoices = invoices.filter((invoice) => {
     const invoiceMonth = new Date(invoice.date).toISOString().slice(0, 7);
     if(invoice.id.includes('84d66a9e-6f5e')) 
-    console.log('invoices invoiceMonth---->>>.',invoice, invoiceMonth);
+    console.log('invoices invoiceMonth---->>>.',invoiceMonth)
     return invoiceMonth === currentMonth || invoiceMonth === nextMonth;
   });
   console.log('invoices----.',filteredInvoices, currentMonth, nextMonth);
