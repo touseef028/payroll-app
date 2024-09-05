@@ -85,7 +85,6 @@ export async function fetchLatestInvoices() {
       SELECT invoices.amount, users.name, users.email, invoices.id
       FROM invoices
       JOIN users ON invoices.user_id = users.id
-      ORDER BY invoices.date DESC
       LIMIT 5`;
 
     const latestInvoices = data.rows.map((invoice) => ({
@@ -149,9 +148,9 @@ export async function fetchFilteredInvoices(
       SELECT
         invoices.id,
         invoices.amount,
-        invoices.date,
         invoices.status,
         invoices.expenses,
+        invoices.month,
         users.name,
         users.email
       FROM invoices
@@ -161,9 +160,8 @@ export async function fetchFilteredInvoices(
         users.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
         invoices.expenses::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
+        invoices.month::text ILIKE ${`%${query}%`} OR
         invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
     console.log('invocies----.',invoices.rows);
@@ -204,7 +202,6 @@ export async function fetchInvoicesPages(query: string) {
       users.email ILIKE ${`%${query}%`} OR
       invoices.amount::text ILIKE ${`%${query}%`} OR
       invoices.expenses::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
       invoices.status ILIKE ${`%${query}%`}
   `;
 

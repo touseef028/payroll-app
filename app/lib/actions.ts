@@ -125,7 +125,7 @@ export async function createInvoice(formData: FormData) {
   const meetingF2FCents = meetingF2F * 100;
   const honorariumCents = honorarium * 100;
   const othersCents = others * 100;
-  const date = new Date(month).toISOString().split("T")[0];
+  const date = "null";
 
   const totalAmount =
     day_hrs_amount * settings.dayTimeRate +
@@ -168,8 +168,8 @@ export async function createInvoice(formData: FormData) {
   try {
     await sql`
       INSERT INTO invoices (user_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date, expenses, receipt_url, admin_description
-     , meeting_online, meeting_f2f, honorarium, others, meetings_description, daytime_description, evening_description, meeting_online_description, meeting_f2f_description, honorarium_description, others_description, days_description, expenses_description, admin)
-      VALUES (${userId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl}, ${adminDescription}, ${meetingOnlineCents}, ${meetingF2FCents}, ${honorariumCents}, ${othersCents}, ${meetingsDescription}, ${daytimeDescription}, ${eveningDescription}, ${meetingOnlineDescription}, ${meetingF2FDescription}, ${honorariumDescription}, ${othersDescription}, ${daysDescription}, ${expensesDescription}, ${adminCents})
+     , meeting_online, meeting_f2f, honorarium, others, meetings_description, daytime_description, evening_description, meeting_online_description, meeting_f2f_description, honorarium_description, others_description, days_description, expenses_description, admin, month)
+      VALUES (${userId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl}, ${adminDescription}, ${meetingOnlineCents}, ${meetingF2FCents}, ${honorariumCents}, ${othersCents}, ${meetingsDescription}, ${daytimeDescription}, ${eveningDescription}, ${meetingOnlineDescription}, ${meetingF2FDescription}, ${honorariumDescription}, ${othersDescription}, ${daysDescription}, ${expensesDescription}, ${adminCents}, ${month})
     `;
     console.log("success");
   } catch (error) {
@@ -181,8 +181,7 @@ export async function createInvoice(formData: FormData) {
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
-}
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+}const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function updateInvoice(id: string, formData: FormData) {
   // console.log("formData---->", formData);
@@ -257,7 +256,7 @@ export async function updateInvoice(id: string, formData: FormData) {
   try {
     await sql`
           UPDATE invoices
-          SET user_id = ${userId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, date = ${date}, expenses = ${expensesInCents}, receipt_url = ${receiptUrl}
+          SET user_id = ${userId}, amount = ${amountInCents}, status = ${status}, day_hrs_amount = ${day_hrs_amountInCents}, eve_hrs_amount = ${eve_hrs_amountInCents}, days = ${daysInCents}, meetings = ${meetingsInCents}, month = ${month}, expenses = ${expensesInCents}, receipt_url = ${receiptUrl}
           WHERE id = ${id}
         `;
   } catch (error) {

@@ -23,15 +23,15 @@ export default function EditInvoiceForm({
   settings: Settings | null;
 }) {
   const [totalAmount, setTotalAmount] = useState(invoice.amount);
-  const now = new Date();
-  const year = now.getFullYear();
-  let month = now.getMonth();
+  // const now = new Date();
+  // const year = now.getFullYear();
+  // let month = now.getMonth();
 
-  if (now.getDate() >= 25) {
-    month += 1;
-  }
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+  // if (now.getDate() >= 25) {
+  //   month += 1;
+  // }
+  // const [isModalOpen, setIsModalOpen] = useState(false);
+  // const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
   if (!settings) return null;
 
@@ -51,7 +51,7 @@ export default function EditInvoiceForm({
   return (
     <form action={updateInvoiceWithId}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <div className="flex items-center">
             <label
               htmlFor="month"
@@ -74,7 +74,7 @@ export default function EditInvoiceForm({
               </option>
             </select>
           </div>
-        </div>
+        </div> */}
         {/* Employee Name */}
         <div className="mb-4">
           <label htmlFor="employee" className="mb-2 block text-sm font-medium">

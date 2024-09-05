@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EmployeeField, Settings, UserField } from "@/app/lib/definitions";
 import { createInvoice } from "@/app/lib/actions";
 import {
@@ -44,21 +44,33 @@ export default function CreateInvoiceForm({
     expensesDescription: "", // Add this line
   });
   const [existingInvoice, setExistingInvoice] = useState(false);
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const day = now.getDate();
+  // const now = new Date();
+  // const year = now.getFullYear();
+  // const month = now.getMonth();
+  // const day = now.getDate();
 
-  const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
-  const nextMonth =
-    month === 11
-      ? `${year + 1}-01`
-      : `${year}-${String(month + 2).padStart(2, "0")}`;
+  // const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+  // const nextMonth =
+  //   month === 11
+  //     ? `${year + 1}-01`
+  //     : `${year}-${String(month + 2).padStart(2, "0")}`;
 
-  let availableMonths = [currentMonth];
-  if (day >= 25) {
-    availableMonths.push(nextMonth);
-  }
+  // let availableMonths = [currentMonth];
+  // if (day >= 25) {
+  //   availableMonths.push(nextMonth);
+  // }
+
+  const [availablePeriods, setAvailablePeriods] = useState([]);
+
+  useEffect(() => {
+    async function fetchPeriods() {
+      const response = await fetch("/api/period-close");
+      const data = await response.json();
+      setAvailablePeriods(data.periods);
+    }
+    fetchPeriods();
+  }, []);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -80,10 +92,10 @@ export default function CreateInvoiceForm({
   };
 
   const handleRowReset = (rowName: string) => {
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [rowName]: '',
-      '[rowName]Description': ''
+      [rowName]: "",
+      "[rowName]Description": "",
     }));
   };
 
@@ -91,30 +103,25 @@ export default function CreateInvoiceForm({
     <form action={createInvoice}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         <div className="mb-4">
-          <div className="flex items-center">
-            <label
-              htmlFor="month"
-              className="text-lg font-bold mr-4 whitespace-nowrap"
-            >
-              Month
-            </label>
-            <select
-              id="month"
-              name="month"
-              className="w-48 cursor-pointer rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue={currentMonth}
-              required
-            >
-              {availableMonths.map((month) => (
-                <option key={month} value={month}>
-                  {new Date(month).toLocaleString("default", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </option>
-              ))}
-            </select>
-          </div>
+          <label htmlFor="month" className="mb-2 block text-sm font-medium">
+            Month
+          </label>
+          <select
+            id="month"
+            name="month"
+            className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+            defaultValue=""
+            required
+          >
+            <option value="" disabled>
+              Select a month
+            </option>
+            {availablePeriods && availablePeriods.map((period: { id: string; period: string }) => (
+              <option key={period.id} value={period.period}>
+                {period.period}
+              </option>
+            ))}
+          </select>
         </div>
         {/* User Name */}
         <div className="mb-4">

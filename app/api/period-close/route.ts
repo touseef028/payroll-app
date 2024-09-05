@@ -20,3 +20,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Failed to update period' }, { status: 500 });
   }
 }
+

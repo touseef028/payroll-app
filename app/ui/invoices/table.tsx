@@ -22,28 +22,28 @@ export default async function InvoicesTable({
   query: string;
   currentPage: number;
 }) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth(); // 0-based index for months
+  // const now = new Date();
+  // const year = now.getFullYear();
+  // const month = now.getMonth(); // 0-based index for months
 
-  const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
-  const nextMonth = month === 11 ? `${year + 1}-01` : `${year}-${String(month + 2).padStart(2, "0")}`;
+  // const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
+  // const nextMonth = month === 11 ? `${year + 1}-01` : `${year}-${String(month + 2).padStart(2, "0")}`;
 
   const invoices = await fetchFilteredInvoices(query, currentPage);
-  
+
   const monthlyStatus = await fetchMonthlyInvoiceStatus();
   // console.log('invoices Month Status---->>>.',monthlyStatus);
   const user = await fetchCurrentUser();
   // console.log('invoices User---->>>.',user);
 
   // Filter invoices based on the current and next month
-  const filteredInvoices = invoices.filter((invoice) => {
-    const invoiceMonth = new Date(invoice.date).toISOString().slice(0, 7);
-    if(invoice.id.includes('84d66a9e-6f5e')) 
-    console.log('invoices invoiceMonth---->>>.',invoiceMonth)
-    return invoiceMonth === currentMonth || invoiceMonth === nextMonth;
-  });
-  console.log('invoices----.',filteredInvoices, currentMonth, nextMonth);
+  // const filteredInvoices = invoices.filter((invoice) => {
+  //   const invoiceMonth = new Date(invoice.date).toISOString().slice(0, 7);
+  //   if(invoice.id.includes('84d66a9e-6f5e'))
+  //   console.log('invoices invoiceMonth---->>>.',invoiceMonth)
+  //   return invoiceMonth === currentMonth || invoiceMonth === nextMonth;
+  // });
+  // console.log('invoices----.',filteredInvoices, currentMonth, nextMonth);
   return (
     <div className="mt-6 flow-root">
       <div className="mt-6 flow-root">
@@ -58,7 +58,7 @@ export default async function InvoicesTable({
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
           <div className="md:hidden">
-            {filteredInvoices?.map((invoice) => (
+            {invoices?.map((invoice) => (
               <div
                 key={invoice.id}
                 className="mb-2 w-full rounded-md bg-white p-4"
@@ -82,7 +82,7 @@ export default async function InvoicesTable({
                           invoice.meetings
                       )}
                     </p>
-                    <p>{formatDateToLocal(invoice.date)}</p>
+                    <p>Date</p>
                   </div>
                   <div className="flex justify-end gap-2">
                     <UpdateInvoice id={invoice.id} />
@@ -119,7 +119,7 @@ export default async function InvoicesTable({
               </tr>
             </thead>
             <tbody className="bg-white">
-              {filteredInvoices?.map((invoice) => (
+              {invoices?.map((invoice) => (
                 <tr
                   key={invoice.id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
@@ -139,10 +139,7 @@ export default async function InvoicesTable({
                     {formatCurrency(invoice.expenses)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    {new Date(invoice.date).toLocaleString("default", {
-                      month: "long",
-                      year: "numeric",
-                    })}
+                    {invoice.month}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     <InvoiceStatus status={invoice.status} />
