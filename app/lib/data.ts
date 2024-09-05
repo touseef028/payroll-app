@@ -164,7 +164,7 @@ export async function fetchFilteredInvoices(
         invoices.status ILIKE ${`%${query}%`}
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
-    console.log('invocies----.',invoices.rows);
+    console.log("invocies----.", invoices.rows);
     return invoices.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -274,9 +274,11 @@ export async function fetchUsers(query: string) {
   try {
     const data = await sql<UserField>`
       SELECT
-        id,
-        name
+        users.id,
+        users.name, 
+        locs.name AS site_name
       FROM users
+      LEFT JOIN locs ON CAST(users.site AS INTEGER) = locs.id
       ORDER BY name ASC
     `;
 
@@ -400,7 +402,6 @@ export async function fetchFilteredUsers(query: string, currentPage: number) {
     throw new Error("Failed to fetch users.");
   }
 }
-
 
 export async function fetchUserById(id: string) {
   try {

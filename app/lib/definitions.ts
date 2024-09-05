@@ -24,7 +24,7 @@ export type Loc = {
   meeting_rate: number;
   admin_rate: number;
   meeting_f2f: number;
-  status:  'active' | 'inactive';
+  status: "active" | "inactive";
   inactive_date: string;
 };
 
@@ -36,6 +36,7 @@ export type LocField = {
 export type UserField = {
   id: string;
   name: string;
+  site_name: string;
 };
 
 export type Employee = {
@@ -50,16 +51,16 @@ export type Invoice = {
   amount: number;
   date: string;
   day_hrs_amount: number;
-  eve_hrs_amount:number;
-  days:number;
-  meetings:number;
+  eve_hrs_amount: number;
+  days: number;
+  meetings: number;
   expenses: number;
   receipt_url: string;
   presignedUrl: string;
   month: string;
   // In TypeScript, this is called a string union type.
   // It means that the "status" property can only be one of the two strings: 'pending' or 'approved'.
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 };
 
 export type Revenue = {
@@ -75,7 +76,7 @@ export type LatestInvoice = {
 };
 
 // The database returns a number for amount, but we later format it to a string with the formatCurrency function
-export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
+export type LatestInvoiceRaw = Omit<LatestInvoice, "amount"> & {
   amount: number;
 };
 
@@ -86,14 +87,14 @@ export type InvoicesTable = {
   email: string;
   date: string;
   day_hrs_amount: number;
-  eve_hrs_amount:number;
-  days:number;
-  meetings:number;
+  eve_hrs_amount: number;
+  days: number;
+  meetings: number;
   amount: number;
   receipt_url: string;
   expenses: number;
   month: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 };
 
 export type EmployeesTableType = {
@@ -123,15 +124,15 @@ export type InvoiceForm = {
   id: string;
   user_id: string;
   day_hrs_amount: number;
-  eve_hrs_amount:number;
-  days:number;
-  meetings:number;
+  eve_hrs_amount: number;
+  days: number;
+  meetings: number;
   amount: number;
   month: string;
   expenses: number;
   receipt_url: string;
   presignedUrl: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 };
 
 export type Settings = {

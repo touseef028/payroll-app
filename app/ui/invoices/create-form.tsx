@@ -71,6 +71,9 @@ export default function CreateInvoiceForm({
     fetchPeriods();
   }, []);
 
+  const userId = formData?.userId;
+  const user_site = users.find((user) => user.id === userId)?.site_name;
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -82,12 +85,73 @@ export default function CreateInvoiceForm({
   };
 
   const calculateTotal = () => {
-    const { day_hrs_amount, eve_hrs_amount, days, meetings } = formData;
+    const {
+      day_hrs_amount,
+      eve_hrs_amount,
+      days,
+      meetings,
+      admin,
+      meetingOnline,
+      meetingF2F,
+    } = formData;
+
+    const dayHrsTotal =
+      user_site === "Boxes"
+        ? Number(day_hrs_amount) * 12
+        : user_site === "Rayban"
+        ? Number(day_hrs_amount) * 13.06
+        : Number(day_hrs_amount) * (settings?.dayTimeRate ?? 0);
+
+    const eveHrsTotal =
+      user_site === "Boxes"
+        ? Number(eve_hrs_amount) * 10
+        : user_site === "Rayban"
+        ? Number(eve_hrs_amount) * 14.03
+        : Number(eve_hrs_amount) * (settings?.eveRate ?? 0);
+
+    const daysTotal =
+      user_site === "Boxes"
+        ? Number(days) * 10
+        : user_site === "Rayban"
+        ? Number(days) * 15.07
+        : Number(days) * (settings?.dayRate ?? 0);
+
+    const meetingsTotal =
+      user_site === "Boxes"
+        ? Number(meetings) * 10
+        : user_site === "Rayban"
+        ? Number(meetings) * 12.08
+        : Number(meetings) * (settings?.meetingRate ?? 0);
+
+    const adminTotal =
+      user_site === "Boxes"
+        ? Number(admin) * 10
+        : user_site === "Rayban"
+        ? Number(admin) * 13
+        : 0;
+
+    const meetingOnlineTotal =
+      user_site === "Boxes"
+        ? Number(meetingOnline) * 4
+        : user_site === "Rayban"
+        ? Number(meetingOnline) * 14
+        : 0;
+
+    const meetingF2FTotal =
+      user_site === "Boxes"
+        ? Number(meetingF2F) * 20
+        : user_site === "Rayban"
+        ? Number(meetingF2F) * 15
+        : 0;
+
     return (
-      Number(day_hrs_amount) * (settings?.dayTimeRate ?? 0) +
-      Number(eve_hrs_amount) * (settings?.eveRate ?? 0) +
-      Number(days) * (settings?.dayRate ?? 0) +
-      Number(meetings) * (settings?.meetingRate ?? 0)
+      dayHrsTotal +
+      eveHrsTotal +
+      daysTotal +
+      meetingsTotal +
+      adminTotal +
+      meetingOnlineTotal +
+      meetingF2FTotal
     );
   };
 
@@ -111,16 +175,16 @@ export default function CreateInvoiceForm({
             name="month"
             className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
             defaultValue=""
-            required
-          >
+            required>
             <option value="" disabled>
               Select a month
             </option>
-            {availablePeriods && availablePeriods.map((period: { id: string; period: string }) => (
-              <option key={period.id} value={period.period}>
-                {period.period}
-              </option>
-            ))}
+            {availablePeriods &&
+              availablePeriods.map((period: { id: string; period: string }) => (
+                <option key={period.id} value={period.period}>
+                  {period.period}
+                </option>
+              ))}
           </select>
         </div>
         {/* User Name */}
@@ -134,8 +198,7 @@ export default function CreateInvoiceForm({
               name="userId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               value={formData.userId}
-              onChange={handleInputChange}
-            >
+              onChange={handleInputChange}>
               <option value="" disabled>
                 Select User
               </option>
@@ -173,7 +236,13 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>No of Meetings</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {user_site === "Boxes"
+                    ? Number(formData?.meetings) * 10
+                    : user_site === "Rayban"
+                    ? Number(formData?.meetings) * 12.08
+                    : Number(formData?.meetings) * (settings?.meetingRate ?? 0)}
+                </td>
                 <td>
                   <input
                     type="text"
@@ -186,8 +255,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("meetings")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -204,7 +272,15 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Hours</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {" "}
+                  {user_site === "Boxes"
+                    ? Number(formData?.day_hrs_amount) * 12
+                    : user_site === "Rayban"
+                    ? Number(formData?.day_hrs_amount) * 13.06
+                    : Number(formData?.day_hrs_amount) *
+                      (settings?.dayTimeRate ?? 0)}
+                </td>
                 <td>
                   <input
                     type="text"
@@ -217,8 +293,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("day_hrs_amount")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -235,7 +310,15 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Hours</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {" "}
+                  {user_site === "Boxes"
+                    ? Number(formData?.eve_hrs_amount) * 10
+                    : user_site === "Rayban"
+                    ? Number(formData?.eve_hrs_amount) * 14.03
+                    : Number(formData?.eve_hrs_amount) *
+                      (settings?.eveRate ?? 0)}
+                </td>
                 <td>
                   <input
                     type="text"
@@ -248,8 +331,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("eve_hrs_amount")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -266,7 +348,14 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Hours</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {" "}
+                  {user_site === "Boxes"
+                    ? Number(formData?.admin) * 10
+                    : user_site === "Rayban"
+                    ? Number(formData?.admin) * 13
+                    : 0}
+                </td>
                 <td>
                   <input
                     type="text"
@@ -279,8 +368,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("admin")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -296,8 +384,15 @@ export default function CreateInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>No of Meetings</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>Hours</td>
+                <td>
+                  {" "}
+                  {user_site === "Boxes"
+                    ? Number(formData?.meetingOnline) * 4
+                    : user_site === "Rayban"
+                    ? Number(formData?.meetingOnline) * 14
+                    : 0}
+                </td>
                 <td>
                   <input
                     type="text"
@@ -310,8 +405,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("meetingOnline")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -327,8 +421,15 @@ export default function CreateInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>No of Meetings</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>Hours</td>
+                <td>
+                  {" "}
+                  {user_site === "Boxes"
+                    ? Number(formData?.meetingF2F) * 20
+                    : user_site === "Rayban"
+                    ? Number(formData?.meetingF2F) * 15
+                    : 0}
+                </td>
                 <td>
                   <input
                     type="text"
@@ -341,8 +442,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("meetingF2F")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -373,8 +473,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("honorarium")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -405,8 +504,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("others")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -424,7 +522,15 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Days</td>
-                <td>{/* Calculate total claim */}</td>
+
+                <td>
+                  {" "}
+                  {user_site === "Boxes"
+                    ? Number(formData?.days) * 10
+                    : user_site === "Rayban"
+                    ? Number(formData?.days) * 15.07
+                    : Number(formData?.days) * (settings?.dayRate ?? 0)}
+                </td>
                 <td>
                   <input
                     type="text"
@@ -437,8 +543,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("days")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -469,8 +574,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("expenses")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -536,8 +640,7 @@ export default function CreateInvoiceForm({
                 />
                 <label
                   htmlFor="pending"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"
-                >
+                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600">
                   Pending <ClockIcon className="h-4 w-4" />
                 </label>
               </div>
@@ -551,8 +654,7 @@ export default function CreateInvoiceForm({
                 />
                 <label
                   htmlFor="approved"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
-                >
+                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white">
                   Approved <CheckIcon className="h-4 w-4" />
                 </label>
               </div>
@@ -566,8 +668,7 @@ export default function CreateInvoiceForm({
                 />
                 <label
                   htmlFor="rejected"
-                  className="ml-2 flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-red-600"
-                >
+                  className="ml-2 flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-red-600">
                   Rejected <HandThumbDownIcon className="h-4 w-4" />
                 </label>
               </div>
@@ -578,8 +679,7 @@ export default function CreateInvoiceForm({
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/invoices"
-          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
-        >
+          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
           Cancel
         </Link>
         <Button type="submit">Create Invoice</Button>
