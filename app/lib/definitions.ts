@@ -28,6 +28,17 @@ export type Loc = {
   inactive_date: string;
 };
 
+export type LocRateField = {
+  name: string;
+  loc_meeting_rate: number;
+  day_time_rate: number;
+  eve_rate: number;
+  day_rate: number;
+  meeting_rate: number;
+  admin_rate: number;
+  meeting_f2f: number;
+};
+
 export type LocField = {
   id: string;
   name: string;

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { EmployeeField, Settings, UserField } from "@/app/lib/definitions";
+import { EmployeeField, LocRateField, Settings, UserField } from "@/app/lib/definitions";
 import { createInvoice } from "@/app/lib/actions";
 import {
   CheckIcon,
@@ -12,13 +12,16 @@ import {
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { useFormState } from "react-dom";
+import { fetchLocsRates } from "@/app/lib/data";
 
 export default function CreateInvoiceForm({
   settings,
   users,
+  locsrates,
 }: {
   settings: Settings | null;
   users: UserField[];
+  locsrates: LocRateField[];
 }) {
   const [formData, setFormData] = useState({
     userId: "",
@@ -73,7 +76,7 @@ export default function CreateInvoiceForm({
 
   const userId = formData?.userId;
   const user_site = users.find((user) => user.id === userId)?.site_name;
-
+  console.log("All_site-LOCS-RATES--------->", locsrates);
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
