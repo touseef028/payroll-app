@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   approveAllInvoices,
   resubmitInvoices,
@@ -14,10 +14,13 @@ export function MonthlyStatusBarClient({
 }: {
   status: string;
   userType: string;
+  month?: string;
 }) {
   const router = useRouter();
   const [availablePeriods, setAvailablePeriods] = useState([]);
-  const [selectedPeriod, setSelectedPeriod] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    availablePeriods[0]?.period || ""
+  );
   const [isRouterReady, setIsRouterReady] = useState(false);
 
   useEffect(() => {
@@ -26,11 +29,19 @@ export function MonthlyStatusBarClient({
 
   useEffect(() => {
     async function fetchPeriods() {
-      const response = await fetch('/api/period-close');
-      const data = await response.json();
-      setAvailablePeriods(data.periods);
-      if (data.periods.length > 0) {
-        setSelectedPeriod(data.periods[0].period);
+      const response = await fetch("/api/period-close");
+      const { periods } = await response.json();
+      if (Array.isArray(periods)) {
+        const filteredPeriods = periods.filter(
+          (period: { status: string }) =>
+            period.status === "Open" || period.status === "Future Enterable"
+        );
+        setAvailablePeriods(filteredPeriods);
+        if (filteredPeriods.length > 0 && !selectedPeriod) {
+          setSelectedPeriod(filteredPeriods[0].period);
+        }
+      } else {
+        setAvailablePeriods([]);
       }
     }
     fetchPeriods();
@@ -75,7 +86,7 @@ export function MonthlyStatusBarClient({
       <div className="flex gap-2">
         {userType === "Manager" && status === "In Progress" && (
           <button
-            onClick={() => approveAllInvoices()}
+            onClick={() => approveAllInvoices(selectedPeriod)}
             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
           >
             Approve All
@@ -84,16 +95,22 @@ export function MonthlyStatusBarClient({
         {userType === "Accountant" && (
           <>
             <button
-              onClick={() => resubmitInvoices()}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Resubmit
-            </button>
-            <button
-              onClick={() => submitInvoices()}
+              onClick={() => submitInvoices(selectedPeriod)}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
               Submit
+            </button>
+            <button
+              onClick={() => approveAllInvoices(selectedPeriod)}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Approve
+            </button>
+            <button
+              onClick={() => resubmitInvoices(selectedPeriod)}
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Resubmit
             </button>
           </>
         )}

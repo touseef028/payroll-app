@@ -440,7 +440,9 @@ export async function deleteUser(id: string) {
 
 // creating actions for Inovices lisst page
 
-export async function approveAllInvoices() {
+export async function approveAllInvoices(
+  month: string
+) {
   // const { user } = await auth();
   // if (user?.user_type !== 'Manager') {
   //   throw new Error('Not authorized to approve invoices');
@@ -449,27 +451,27 @@ export async function approveAllInvoices() {
   await sql`
     UPDATE invoices
     SET status = 'approved'
-    WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+    WHERE month  = ${month}
     AND status IN ('pending', 'rejected')
   `;
 
   revalidatePath("/dashboard/invoices");
 }
 
-export async function resubmitInvoices() {
+export async function resubmitInvoices(month: string) {
   await sql`
     UPDATE invoices
     SET status = 'pending'
-    WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+    WHERE month  = ${month}
   `;
   revalidatePath("/dashboard/invoices");
 }
 
-export async function submitInvoices() {
+export async function submitInvoices(month: string) {
   await sql`
     UPDATE invoices
     SET status = 'Approved'
-    WHERE DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+    WHERE month  = ${month}
   `;
   revalidatePath("/dashboard/invoices");
 }

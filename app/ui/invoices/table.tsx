@@ -18,32 +18,18 @@ import {
 export default async function InvoicesTable({
   query,
   currentPage,
+  month,
 }: {
   query: string;
   currentPage: number;
+  month?: string;
 }) {
-  // const now = new Date();
-  // const year = now.getFullYear();
-  // const month = now.getMonth(); // 0-based index for months
+  
+  const invoices = await fetchFilteredInvoices(query, currentPage, month || '');
 
-  // const currentMonth = `${year}-${String(month + 1).padStart(2, "0")}`;
-  // const nextMonth = month === 11 ? `${year + 1}-01` : `${year}-${String(month + 2).padStart(2, "0")}`;
-
-  const invoices = await fetchFilteredInvoices(query, currentPage);
-
-  const monthlyStatus = await fetchMonthlyInvoiceStatus();
-  // console.log('invoices Month Status---->>>.',monthlyStatus);
+  const monthlyStatus = await fetchMonthlyInvoiceStatus(month || '');
   const user = await fetchCurrentUser();
-  // console.log('invoices User---->>>.',user);
 
-  // Filter invoices based on the current and next month
-  // const filteredInvoices = invoices.filter((invoice) => {
-  //   const invoiceMonth = new Date(invoice.date).toISOString().slice(0, 7);
-  //   if(invoice.id.includes('84d66a9e-6f5e'))
-  //   console.log('invoices invoiceMonth---->>>.',invoiceMonth)
-  //   return invoiceMonth === currentMonth || invoiceMonth === nextMonth;
-  // });
-  // console.log('invoices----.',filteredInvoices, currentMonth, nextMonth);
   return (
     <div className="mt-6 flow-root">
       <div className="mt-6 flow-root">
@@ -52,6 +38,7 @@ export default async function InvoicesTable({
             <MonthlyStatusBarClient
               status={monthlyStatus}
               userType={user.user_type}
+              month={month}
             />
           )}
       </div>

@@ -18,11 +18,13 @@ export default async function Page({
   searchParams?: {
     query?: string;
     page?: string;
+    month?: string;
   };
 }) {
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
   const totalPages = await fetchInvoicesPages(query);
+  const month = searchParams?.month ? decodeURIComponent(searchParams.month) : '';
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
@@ -36,6 +38,7 @@ export default async function Page({
         <Table
           query={query}
           currentPage={currentPage}
+          month={month}
         />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">

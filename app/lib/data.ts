@@ -139,10 +139,11 @@ export async function fetchCardData() {
 const ITEMS_PER_PAGE = 10;
 export async function fetchFilteredInvoices(
   query: string,
-  currentPage: number
+  currentPage: number,
+  month: string,
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-
+  console.log('invocies month----.',month);
   try {
     const invoices = await sql<InvoicesTable>`
       SELECT
@@ -156,12 +157,12 @@ export async function fetchFilteredInvoices(
       FROM invoices
       JOIN users ON invoices.user_id = users.id
       WHERE
-        users.name ILIKE ${`%${query}%`} OR
+        (users.name ILIKE ${`%${query}%`} OR
         users.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
         invoices.expenses::text ILIKE ${`%${query}%`} OR
-        invoices.month::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
+        invoices.status ILIKE ${`%${query}%`})
+        AND invoices.month = ${month}
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
     console.log('invocies----.',invoices.rows);
@@ -172,7 +173,9 @@ export async function fetchFilteredInvoices(
   }
 }
 
-export async function fetchMonthlyInvoiceStatus() {
+export async function fetchMonthlyInvoiceStatus(
+  month: string,
+) {
   try {
     const result = await sql`
       SELECT
@@ -184,6 +187,7 @@ export async function fetchMonthlyInvoiceStatus() {
           ELSE 'SUBMITTED'
         END AS overall_status
       FROM invoices
+      WHERE month = ${month}
     `;
     return result.rows[0].overall_status;
   } catch (error) {
