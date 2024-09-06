@@ -1,6 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { EmployeeField, LocRateField, Settings, UserField } from "@/app/lib/definitions";
+import {
+  EmployeeField,
+  LocRateField,
+  Settings,
+  UserField,
+} from "@/app/lib/definitions";
 import { createInvoice } from "@/app/lib/actions";
 import {
   CheckIcon,
@@ -77,6 +82,9 @@ export default function CreateInvoiceForm({
   const userId = formData?.userId;
   const user_site = users.find((user) => user.id === userId)?.site_name;
   console.log("All_site-LOCS-RATES--------->", locsrates);
+
+  const locRates = locsrates.find((loc) => loc.name === user_site);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -98,63 +106,18 @@ export default function CreateInvoiceForm({
       meetingF2F,
     } = formData;
 
-    const dayHrsTotal =
-      user_site === "Boxes"
-        ? Number(day_hrs_amount) * 12
-        : user_site === "Rayban"
-        ? Number(day_hrs_amount) * 13.06
-        : Number(day_hrs_amount) * (settings?.dayTimeRate ?? 0);
-
-    const eveHrsTotal =
-      user_site === "Boxes"
-        ? Number(eve_hrs_amount) * 10
-        : user_site === "Rayban"
-        ? Number(eve_hrs_amount) * 14.03
-        : Number(eve_hrs_amount) * (settings?.eveRate ?? 0);
-
-    const daysTotal =
-      user_site === "Boxes"
-        ? Number(days) * 10
-        : user_site === "Rayban"
-        ? Number(days) * 15.07
-        : Number(days) * (settings?.dayRate ?? 0);
-
-    const meetingsTotal =
-      user_site === "Boxes"
-        ? Number(meetings) * 10
-        : user_site === "Rayban"
-        ? Number(meetings) * 12.08
-        : Number(meetings) * (settings?.meetingRate ?? 0);
-
-    const adminTotal =
-      user_site === "Boxes"
-        ? Number(admin) * 10
-        : user_site === "Rayban"
-        ? Number(admin) * 13
-        : 0;
-
-    const meetingOnlineTotal =
-      user_site === "Boxes"
-        ? Number(meetingOnline) * 4
-        : user_site === "Rayban"
-        ? Number(meetingOnline) * 14
-        : 0;
-
-    const meetingF2FTotal =
-      user_site === "Boxes"
-        ? Number(meetingF2F) * 20
-        : user_site === "Rayban"
-        ? Number(meetingF2F) * 15
-        : 0;
+    const LOCMeeting =
+      Number(meetings) * (Number(locRates?.locMeetingRate) || 0);
+    const dayHrs = Number(day_hrs_amount) * (Number(locRates?.dayRate) || 0);
+    const eveHrs = Number(eve_hrs_amount) * (Number(locRates?.eveRate) || 0);
+    const admin_rate = Number(admin) * (Number(locRates?.adminRate) || 0);
+    const meeting_online =
+      Number(meetingOnline) * (Number(locRates?.meetingRate) || 0);
+    const meeting_f2f =
+      Number(meetingF2F) * (Number(locRates?.meetingF2f) || 0);
 
     return (
-      dayHrsTotal +
-      eveHrsTotal +
-      daysTotal +
-      meetingsTotal +
-      adminTotal +
-      meetingOnlineTotal +
-      meetingF2FTotal
+      LOCMeeting + dayHrs + eveHrs + admin_rate + meeting_online + meeting_f2f
     );
   };
 
@@ -240,11 +203,8 @@ export default function CreateInvoiceForm({
                 </td>
                 <td>No of Meetings</td>
                 <td>
-                  {user_site === "Boxes"
-                    ? Number(formData?.meetings) * 10
-                    : user_site === "Rayban"
-                    ? Number(formData?.meetings) * 12.08
-                    : Number(formData?.meetings) * (settings?.meetingRate ?? 0)}
+                  {Number(formData.meetings) *
+                    (Number(locRates?.locMeetingRate) || 0)}
                 </td>
                 <td>
                   <input
@@ -277,12 +237,8 @@ export default function CreateInvoiceForm({
                 <td>Hours</td>
                 <td>
                   {" "}
-                  {user_site === "Boxes"
-                    ? Number(formData?.day_hrs_amount) * 12
-                    : user_site === "Rayban"
-                    ? Number(formData?.day_hrs_amount) * 13.06
-                    : Number(formData?.day_hrs_amount) *
-                      (settings?.dayTimeRate ?? 0)}
+                  {Number(formData.day_hrs_amount) *
+                    (Number(locRates?.dayRate) || 0)}
                 </td>
                 <td>
                   <input
@@ -315,12 +271,8 @@ export default function CreateInvoiceForm({
                 <td>Hours</td>
                 <td>
                   {" "}
-                  {user_site === "Boxes"
-                    ? Number(formData?.eve_hrs_amount) * 10
-                    : user_site === "Rayban"
-                    ? Number(formData?.eve_hrs_amount) * 14.03
-                    : Number(formData?.eve_hrs_amount) *
-                      (settings?.eveRate ?? 0)}
+                  {Number(formData.eve_hrs_amount) *
+                    (Number(locRates?.eveRate) || 0)}
                 </td>
                 <td>
                   <input
@@ -353,11 +305,7 @@ export default function CreateInvoiceForm({
                 <td>Hours</td>
                 <td>
                   {" "}
-                  {user_site === "Boxes"
-                    ? Number(formData?.admin) * 10
-                    : user_site === "Rayban"
-                    ? Number(formData?.admin) * 13
-                    : 0}
+                  {Number(formData.admin) * (Number(locRates?.adminRate) || 0)}
                 </td>
                 <td>
                   <input
@@ -389,12 +337,8 @@ export default function CreateInvoiceForm({
                 </td>
                 <td>Hours</td>
                 <td>
-                  {" "}
-                  {user_site === "Boxes"
-                    ? Number(formData?.meetingOnline) * 4
-                    : user_site === "Rayban"
-                    ? Number(formData?.meetingOnline) * 14
-                    : 0}
+                  {Number(formData.meetingOnline) *
+                    (Number(locRates?.meetingRate) || 0)}
                 </td>
                 <td>
                   <input
@@ -426,12 +370,8 @@ export default function CreateInvoiceForm({
                 </td>
                 <td>Hours</td>
                 <td>
-                  {" "}
-                  {user_site === "Boxes"
-                    ? Number(formData?.meetingF2F) * 20
-                    : user_site === "Rayban"
-                    ? Number(formData?.meetingF2F) * 15
-                    : 0}
+                  {Number(formData.meetingF2F) *
+                    (Number(locRates?.meetingF2f) || 0)}
                 </td>
                 <td>
                   <input
