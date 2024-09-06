@@ -42,8 +42,8 @@ export default function CreateInvoiceForm({
     expenses: "",
     admin: "",
     meetingsDescription: "", // Add this line
-    daytimeDescription: "", // Add this line
-    eveningDescription: "", // Add this line
+    day_hrs_amountDescription: "", // Add this line
+    eve_hrs_amountDescription: "", // Add this line
     meetingOnlineDescription: "", // Add this line
     meetingF2FDescription: "", // Add this line
     honorariumDescription: "", // Add this line
@@ -89,9 +89,13 @@ export default function CreateInvoiceForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "userId" ? value : parseFloat(value) || 0,
+      [name]:
+        name === "userId" || name.endsWith("Description")
+          ? value
+          : parseFloat(value) || 0,
     }));
   };
 
@@ -115,17 +119,25 @@ export default function CreateInvoiceForm({
       Number(meetingOnline) * (Number(locRates?.meetingRate) || 0);
     const meeting_f2f =
       Number(meetingF2F) * (Number(locRates?.meetingF2f) || 0);
+    const dayRate = Number(days) * (Number(locRates?.dayTimeRate) || 0);
 
     return (
-      LOCMeeting + dayHrs + eveHrs + admin_rate + meeting_online + meeting_f2f
+      LOCMeeting +
+      dayHrs +
+      eveHrs +
+      admin_rate +
+      meeting_online +
+      meeting_f2f +
+      dayRate
     );
   };
 
   const handleRowReset = (rowName: string) => {
+    console.log([`${rowName}Description`]);
     setFormData((prevData) => ({
       ...prevData,
       [rowName]: "",
-      "[rowName]Description": "",
+      [rowName + "Description"]: "",
     }));
   };
 
@@ -210,6 +222,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="meetingsDescription"
+                    value={formData.meetingsDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -243,7 +256,8 @@ export default function CreateInvoiceForm({
                 <td>
                   <input
                     type="text"
-                    name="daytimeDescription"
+                    name="day_hrs_amountDescription"
+                    value={formData.day_hrs_amountDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -277,7 +291,8 @@ export default function CreateInvoiceForm({
                 <td>
                   <input
                     type="text"
-                    name="eveningDescription"
+                    name="eve_hrs_amountDescription"
+                    value={formData.eve_hrs_amountDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -311,6 +326,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="adminDescription"
+                    value={formData.adminDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -344,6 +360,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="meetingOnlineDescription"
+                    value={formData.meetingOnlineDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -377,6 +394,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="meetingF2FDescription"
+                    value={formData.meetingF2FDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -408,6 +426,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="honorariumDescription"
+                    value={formData.honorariumDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -439,6 +458,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="othersDescription"
+                    value={formData.othersDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -467,17 +487,13 @@ export default function CreateInvoiceForm({
                 <td>Days</td>
 
                 <td>
-                  {" "}
-                  {user_site === "Boxes"
-                    ? Number(formData?.days) * 10
-                    : user_site === "Rayban"
-                    ? Number(formData?.days) * 15.07
-                    : Number(formData?.days) * (settings?.dayRate ?? 0)}
+                  {Number(formData.days) * (Number(locRates?.dayTimeRate) || 0)}
                 </td>
                 <td>
                   <input
                     type="text"
                     name="daysDescription"
+                    value={formData.daysDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -509,6 +525,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="expensesDescription"
+                    value={formData.expensesDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
