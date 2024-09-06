@@ -73,8 +73,16 @@ export default function CreateInvoiceForm({
   useEffect(() => {
     async function fetchPeriods() {
       const response = await fetch("/api/period-close");
-      const data = await response.json();
-      setAvailablePeriods(data.periods);
+      const { periods } = await response.json();
+      if (Array.isArray(periods)) {
+        const filteredPeriods = periods.filter(
+          (period: { status: string }) =>
+            period.status === "Open" || period.status === "Future Enterable"
+        );
+        setAvailablePeriods(filteredPeriods);
+      } else {
+        setAvailablePeriods([]);
+      }
     }
     fetchPeriods();
   }, []);
@@ -157,12 +165,11 @@ export default function CreateInvoiceForm({
             <option value="" disabled>
               Select a month
             </option>
-            {availablePeriods &&
-              availablePeriods.map((period: { id: string; period: string }) => (
-                <option key={period.id} value={period.period}>
-                  {period.period}
-                </option>
-              ))}
+            {availablePeriods.map((period: { id: string; period: string }) => (
+              <option key={period.id} value={period.period}>
+                {period.period}
+              </option>
+            ))}
           </select>
         </div>
         {/* User Name */}
