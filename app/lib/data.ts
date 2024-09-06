@@ -165,7 +165,7 @@ export async function fetchFilteredInvoices(
         AND invoices.month = ${month}
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
-    console.log('invocies----.',invoices.rows);
+    console.log("invocies----.", invoices.rows);
     return invoices.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -278,9 +278,11 @@ export async function fetchUsers(query: string) {
   try {
     const data = await sql<UserField>`
       SELECT
-        id,
-        name
+        users.id,
+        users.name, 
+        locs.name AS site_name
       FROM users
+      LEFT JOIN locs ON CAST(users.site AS INTEGER) = locs.id
       ORDER BY name ASC
     `;
 
@@ -405,7 +407,6 @@ export async function fetchFilteredUsers(query: string, currentPage: number) {
   }
 }
 
-
 export async function fetchUserById(id: string) {
   try {
     const users = await sql<User>`
@@ -486,6 +487,29 @@ export async function fetchLocById(id: string) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to locs.");
+  }
+}
+export async function fetchLocsRates() {
+  try {
+    const data = await sql<Loc>`
+      SELECT name, day_time_rate, eve_rate, day_rate, meeting_rate, admin_rate, meeting_f2f, loc_meeting_rate
+      FROM locs 
+      WHERE status = 'active'
+    `;
+
+    return data.rows.map(loc => ({
+      name: loc.name,
+      dayTimeRate: loc.day_time_rate,
+      eveRate: loc.eve_rate,
+      dayRate: loc.day_rate,
+      meetingRate: loc.meeting_rate,
+      adminRate: loc.admin_rate,
+      meetingF2f: loc.meeting_f2f,
+      locMeetingRate: loc.loc_meeting_rate,
+    }));
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch LOC rates.");
   }
 }
 

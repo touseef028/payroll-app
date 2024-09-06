@@ -21,6 +21,7 @@ export function MonthlyStatusBarClient({
   const [selectedPeriod, setSelectedPeriod] = useState(
     availablePeriods[0]?.period || ""
   );
+
   const [isRouterReady, setIsRouterReady] = useState(false);
 
   useEffect(() => {
@@ -59,8 +60,7 @@ export function MonthlyStatusBarClient({
         <div className="flex items-center">
           <label
             htmlFor="period"
-            className="text-lg font-bold mr-4 whitespace-nowrap"
-          >
+            className="text-lg font-bold mr-4 whitespace-nowrap">
             Payroll Period
           </label>
           <select
@@ -69,8 +69,7 @@ export function MonthlyStatusBarClient({
             className="w-48 cursor-pointer rounded-md border border-gray-200 py-2 pl-3 text-sm outline-2 placeholder:text-gray-500"
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            required
-          >
+            required>
             {availablePeriods.map((period: { period: string }) => (
               <option key={period.period} value={period.period}>
                 {period.period}

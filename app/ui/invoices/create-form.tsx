@@ -1,6 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { EmployeeField, Settings, UserField } from "@/app/lib/definitions";
+import {
+  EmployeeField,
+  LocRateField,
+  Settings,
+  UserField,
+} from "@/app/lib/definitions";
 import { createInvoice } from "@/app/lib/actions";
 import {
   CheckIcon,
@@ -12,13 +17,16 @@ import {
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { useFormState } from "react-dom";
+import { fetchLocsRates } from "@/app/lib/data";
 
 export default function CreateInvoiceForm({
   settings,
   users,
+  locsrates,
 }: {
   settings: Settings | null;
   users: UserField[];
+  locsrates: LocRateField[];
 }) {
   const [formData, setFormData] = useState({
     userId: "",
@@ -34,8 +42,8 @@ export default function CreateInvoiceForm({
     expenses: "",
     admin: "",
     meetingsDescription: "", // Add this line
-    daytimeDescription: "", // Add this line
-    eveningDescription: "", // Add this line
+    day_hrs_amountDescription: "", // Add this line
+    eve_hrs_amountDescription: "", // Add this line
     meetingOnlineDescription: "", // Add this line
     meetingF2FDescription: "", // Add this line
     honorariumDescription: "", // Add this line
@@ -79,31 +87,65 @@ export default function CreateInvoiceForm({
     fetchPeriods();
   }, []);
 
+  const userId = formData?.userId;
+  const user_site = users.find((user) => user.id === userId)?.site_name;
+  console.log("All_site-LOCS-RATES--------->", locsrates);
+
+  const locRates = locsrates.find((loc) => loc.name === user_site);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "userId" ? value : parseFloat(value) || 0,
+      [name]:
+        name === "userId" || name.endsWith("Description")
+          ? value
+          : parseFloat(value) || 0,
     }));
   };
 
   const calculateTotal = () => {
-    const { day_hrs_amount, eve_hrs_amount, days, meetings } = formData;
+    const {
+      day_hrs_amount,
+      eve_hrs_amount,
+      days,
+      meetings,
+      admin,
+      meetingOnline,
+      meetingF2F,
+    } = formData;
+
+    const LOCMeeting =
+      Number(meetings) * (Number(locRates?.locMeetingRate) || 0);
+    const dayHrs = Number(day_hrs_amount) * (Number(locRates?.dayRate) || 0);
+    const eveHrs = Number(eve_hrs_amount) * (Number(locRates?.eveRate) || 0);
+    const admin_rate = Number(admin) * (Number(locRates?.adminRate) || 0);
+    const meeting_online =
+      Number(meetingOnline) * (Number(locRates?.meetingRate) || 0);
+    const meeting_f2f =
+      Number(meetingF2F) * (Number(locRates?.meetingF2f) || 0);
+    const dayRate = Number(days) * (Number(locRates?.dayTimeRate) || 0);
+
     return (
-      Number(day_hrs_amount) * (settings?.dayTimeRate ?? 0) +
-      Number(eve_hrs_amount) * (settings?.eveRate ?? 0) +
-      Number(days) * (settings?.dayRate ?? 0) +
-      Number(meetings) * (settings?.meetingRate ?? 0)
+      LOCMeeting +
+      dayHrs +
+      eveHrs +
+      admin_rate +
+      meeting_online +
+      meeting_f2f +
+      dayRate
     );
   };
 
   const handleRowReset = (rowName: string) => {
+    console.log([`${rowName}Description`]);
     setFormData((prevData) => ({
       ...prevData,
       [rowName]: "",
-      "[rowName]Description": "",
+      [rowName + "Description"]: "",
     }));
   };
 
@@ -119,8 +161,7 @@ export default function CreateInvoiceForm({
             name="month"
             className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
             defaultValue=""
-            required
-          >
+            required>
             <option value="" disabled>
               Select a month
             </option>
@@ -142,8 +183,7 @@ export default function CreateInvoiceForm({
               name="userId"
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               value={formData.userId}
-              onChange={handleInputChange}
-            >
+              onChange={handleInputChange}>
               <option value="" disabled>
                 Select User
               </option>
@@ -181,11 +221,15 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>No of Meetings</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {Number(formData.meetings) *
+                    (Number(locRates?.locMeetingRate) || 0)}
+                </td>
                 <td>
                   <input
                     type="text"
                     name="meetingsDescription"
+                    value={formData.meetingsDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -194,8 +238,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("meetings")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -212,11 +255,16 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Hours</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {" "}
+                  {Number(formData.day_hrs_amount) *
+                    (Number(locRates?.dayRate) || 0)}
+                </td>
                 <td>
                   <input
                     type="text"
-                    name="daytimeDescription"
+                    name="day_hrs_amountDescription"
+                    value={formData.day_hrs_amountDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -225,8 +273,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("day_hrs_amount")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -243,11 +290,16 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Hours</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {" "}
+                  {Number(formData.eve_hrs_amount) *
+                    (Number(locRates?.eveRate) || 0)}
+                </td>
                 <td>
                   <input
                     type="text"
-                    name="eveningDescription"
+                    name="eve_hrs_amountDescription"
+                    value={formData.eve_hrs_amountDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -256,8 +308,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("eve_hrs_amount")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -274,11 +325,15 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Hours</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>
+                  {" "}
+                  {Number(formData.admin) * (Number(locRates?.adminRate) || 0)}
+                </td>
                 <td>
                   <input
                     type="text"
                     name="adminDescription"
+                    value={formData.adminDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -287,8 +342,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("admin")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -304,12 +358,16 @@ export default function CreateInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>No of Meetings</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>Hours</td>
+                <td>
+                  {Number(formData.meetingOnline) *
+                    (Number(locRates?.meetingRate) || 0)}
+                </td>
                 <td>
                   <input
                     type="text"
                     name="meetingOnlineDescription"
+                    value={formData.meetingOnlineDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -318,8 +376,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("meetingOnline")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -335,12 +392,16 @@ export default function CreateInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>No of Meetings</td>
-                <td>{/* Calculate total claim */}</td>
+                <td>Hours</td>
+                <td>
+                  {Number(formData.meetingF2F) *
+                    (Number(locRates?.meetingF2f) || 0)}
+                </td>
                 <td>
                   <input
                     type="text"
                     name="meetingF2FDescription"
+                    value={formData.meetingF2FDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -349,8 +410,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("meetingF2F")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -373,6 +433,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="honorariumDescription"
+                    value={formData.honorariumDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -381,8 +442,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("honorarium")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -405,6 +465,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="othersDescription"
+                    value={formData.othersDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -413,8 +474,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("others")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -432,11 +492,15 @@ export default function CreateInvoiceForm({
                   />
                 </td>
                 <td>Days</td>
-                <td>{/* Calculate total claim */}</td>
+
+                <td>
+                  {Number(formData.days) * (Number(locRates?.dayTimeRate) || 0)}
+                </td>
                 <td>
                   <input
                     type="text"
                     name="daysDescription"
+                    value={formData.daysDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -445,8 +509,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("days")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -469,6 +532,7 @@ export default function CreateInvoiceForm({
                   <input
                     type="text"
                     name="expensesDescription"
+                    value={formData.expensesDescription}
                     onChange={handleInputChange}
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
@@ -477,8 +541,7 @@ export default function CreateInvoiceForm({
                   <button
                     type="button"
                     onClick={() => handleRowReset("expenses")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
-                  >
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
                     ×
                   </button>
                 </td>
@@ -544,8 +607,7 @@ export default function CreateInvoiceForm({
                 />
                 <label
                   htmlFor="pending"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600"
-                >
+                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600">
                   Pending <ClockIcon className="h-4 w-4" />
                 </label>
               </div>
@@ -559,8 +621,7 @@ export default function CreateInvoiceForm({
                 />
                 <label
                   htmlFor="approved"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white"
-                >
+                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white">
                   Approved <CheckIcon className="h-4 w-4" />
                 </label>
               </div>
@@ -574,8 +635,7 @@ export default function CreateInvoiceForm({
                 />
                 <label
                   htmlFor="rejected"
-                  className="ml-2 flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-red-600"
-                >
+                  className="ml-2 flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-red-600">
                   Rejected <HandThumbDownIcon className="h-4 w-4" />
                 </label>
               </div>
@@ -586,8 +646,7 @@ export default function CreateInvoiceForm({
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/invoices"
-          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
-        >
+          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
           Cancel
         </Link>
         <Button type="submit">Create Invoice</Button>
