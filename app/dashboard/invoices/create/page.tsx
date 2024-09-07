@@ -1,11 +1,12 @@
 import Form from "@/app/ui/invoices/create-form";
 import Breadcrumbs from "@/app/ui/invoices/breadcrumbs";
-import { fetchUsers, fetchSettings, fetchLocsRates } from "@/app/lib/data";
+import { fetchUsers, fetchLocsRates, fetchCurrentUser } from "@/app/lib/data";
 
 export default async function Page() {
   const users = await fetchUsers("");
-  const settings = await fetchSettings();
   const locsrates = await fetchLocsRates();
+  const user = await fetchCurrentUser();
+
   return (
     <main>
       <Breadcrumbs
@@ -18,7 +19,7 @@ export default async function Page() {
           },
         ]}
       />
-      <Form users={users} settings={settings} locsrates={locsrates} />
+      <Form users={users} locsrates={locsrates} userType={user?.user_type} />
     </main>
   );
 }

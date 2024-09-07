@@ -20,14 +20,15 @@ import { useFormState } from "react-dom";
 import { fetchLocsRates } from "@/app/lib/data";
 
 export default function CreateInvoiceForm({
-  settings,
   users,
   locsrates,
+  userType,
 }: {
-  settings: Settings | null;
   users: UserField[];
   locsrates: LocRateField[];
+  userType: string;
 }) {
+  console.log(userType);
   const [formData, setFormData] = useState({
     userId: "",
     day_hrs_amount: "",
@@ -589,7 +590,7 @@ export default function CreateInvoiceForm({
         </div>
 
         {/* Invoice Status */}
-        {users.filter((user) => user.user_type !== "Staff").length > 0 && (
+        {userType !== "Staff" && (
           <fieldset>
             <legend className="mb-2 block text-sm font-medium">
               Set the invoice status

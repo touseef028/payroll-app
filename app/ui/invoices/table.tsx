@@ -24,10 +24,9 @@ export default async function InvoicesTable({
   currentPage: number;
   month?: string;
 }) {
-  
-  const invoices = await fetchFilteredInvoices(query, currentPage, month || '');
+  const invoices = await fetchFilteredInvoices(query, currentPage, month || "");
 
-  const monthlyStatus = await fetchMonthlyInvoiceStatus(month || '');
+  const monthlyStatus = await fetchMonthlyInvoiceStatus(month || "");
   const user = await fetchCurrentUser();
 
   return (
