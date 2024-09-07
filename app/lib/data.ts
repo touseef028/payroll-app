@@ -140,10 +140,10 @@ const ITEMS_PER_PAGE = 10;
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
-  month: string,
+  month: string
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-  console.log('invocies month----.',month);
+  console.log("invocies month----.", month);
   try {
     const invoices = await sql<InvoicesTable>`
       SELECT
@@ -173,9 +173,7 @@ export async function fetchFilteredInvoices(
   }
 }
 
-export async function fetchMonthlyInvoiceStatus(
-  month: string,
-) {
+export async function fetchMonthlyInvoiceStatus(month: string) {
   try {
     const result = await sql`
       SELECT
@@ -221,16 +219,7 @@ export async function fetchInvoiceById(id: string) {
   try {
     const data = await sql<InvoiceForm>`
       SELECT
-        invoices.id,
-        invoices.user_id,
-        invoices.amount,
-        invoices.status,
-        invoices.day_hrs_amount,
-        invoices.eve_hrs_amount,
-        invoices.days,
-        invoices.meetings,
-        invoices.expenses,
-        invoices.receipt_url
+       *
       FROM invoices
       WHERE invoices.id = ${id};
     `;
@@ -280,12 +269,12 @@ export async function fetchUsers(query: string) {
       SELECT
         users.id,
         users.name, 
+        users.user_type,
         locs.name AS site_name
       FROM users
       LEFT JOIN locs ON CAST(users.site AS INTEGER) = locs.id
       ORDER BY name ASC
     `;
-
     const users = data.rows;
     return users;
   } catch (err) {
@@ -497,7 +486,7 @@ export async function fetchLocsRates() {
       WHERE status = 'active'
     `;
 
-    return data.rows.map(loc => ({
+    return data.rows.map((loc) => ({
       name: loc.name,
       dayTimeRate: loc.day_time_rate,
       eveRate: loc.eve_rate,

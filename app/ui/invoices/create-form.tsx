@@ -68,7 +68,7 @@ export default function CreateInvoiceForm({
   //   availableMonths.push(nextMonth);
   // }
 
-  const [availablePeriods, setAvailablePeriods] = useState([]);
+  const [availablePeriods, setAvailablePeriods] = useState<any>([]);
 
   useEffect(() => {
     async function fetchPeriods() {
@@ -141,7 +141,6 @@ export default function CreateInvoiceForm({
   };
 
   const handleRowReset = (rowName: string) => {
-    console.log([`${rowName}Description`]);
     setFormData((prevData) => ({
       ...prevData,
       [rowName]: "",
@@ -185,12 +184,12 @@ export default function CreateInvoiceForm({
               value={formData.userId}
               onChange={handleInputChange}>
               <option value="" disabled>
-                Select User
+                Select User - Site Name
               </option>
               {users &&
                 users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
+                  <option key={user.id} value={user.site_name}>
+                    {user.name} - {user.site_name}
                   </option>
                 ))}
             </select>
@@ -590,58 +589,60 @@ export default function CreateInvoiceForm({
         </div>
 
         {/* Invoice Status */}
-        <fieldset>
-          <legend className="mb-2 block text-sm font-medium">
-            Set the invoice status
-          </legend>
-          <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
-            <div className="flex gap-4">
-              <div className="flex items-center">
-                <input
-                  id="pending"
-                  name="status"
-                  type="radio"
-                  value="pending"
-                  defaultChecked
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                />
-                <label
-                  htmlFor="pending"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600">
-                  Pending <ClockIcon className="h-4 w-4" />
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="approved"
-                  name="status"
-                  type="radio"
-                  value="approved"
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                />
-                <label
-                  htmlFor="approved"
-                  className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white">
-                  Approved <CheckIcon className="h-4 w-4" />
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="rejected"
-                  name="status"
-                  type="radio"
-                  value="rejected"
-                  className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
-                />
-                <label
-                  htmlFor="rejected"
-                  className="ml-2 flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-red-600">
-                  Rejected <HandThumbDownIcon className="h-4 w-4" />
-                </label>
+        {users.filter((user) => user.user_type !== "Staff").length > 0 && (
+          <fieldset>
+            <legend className="mb-2 block text-sm font-medium">
+              Set the invoice status
+            </legend>
+            <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
+              <div className="flex gap-4">
+                <div className="flex items-center">
+                  <input
+                    id="pending"
+                    name="status"
+                    type="radio"
+                    value="pending"
+                    defaultChecked
+                    className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
+                  />
+                  <label
+                    htmlFor="pending"
+                    className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600">
+                    Pending <ClockIcon className="h-4 w-4" />
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="approved"
+                    name="status"
+                    type="radio"
+                    value="approved"
+                    className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
+                  />
+                  <label
+                    htmlFor="approved"
+                    className="ml-2 flex cursor-pointer items-center gap-1.5 rounded-full bg-green-500 px-3 py-1.5 text-xs font-medium text-white">
+                    Approved <CheckIcon className="h-4 w-4" />
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="rejected"
+                    name="status"
+                    type="radio"
+                    value="rejected"
+                    className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
+                  />
+                  <label
+                    htmlFor="rejected"
+                    className="ml-2 flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-red-600">
+                    Rejected <HandThumbDownIcon className="h-4 w-4" />
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-        </fieldset>
+          </fieldset>
+        )}
       </div>
       <div className="mt-6 flex justify-end gap-4">
         <Link

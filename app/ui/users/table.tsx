@@ -15,6 +15,7 @@ export default function UsersTable({
     email: string;
     phone_number: string;
     site_name: string;
+    date_of_birth: string;
   }>;
 }) {
   return (

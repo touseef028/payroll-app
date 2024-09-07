@@ -48,6 +48,7 @@ export type UserField = {
   id: string;
   name: string;
   site_name: string;
+  user_type: string;
 };
 
 export type Employee = {
@@ -144,6 +145,22 @@ export type InvoiceForm = {
   receipt_url: string;
   presignedUrl: string;
   status: "pending" | "approved" | "rejected";
+  admin_description: string;
+  meeting_online: string;
+  meeting_f2f: string;
+  honorarium: string;
+  others: string;
+  meetings_description: string;
+  daytime_description: string;
+  evening_description: string;
+  meeting_online_description: string;
+  meeting_f2f_description: string;
+  honorarium_description: string;
+  others_description: string;
+  days_description: string;
+  expenses_description: string;
+  admin: string;
+  date: string;
 };
 
 export type Settings = {
