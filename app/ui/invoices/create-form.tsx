@@ -28,7 +28,6 @@ export default function CreateInvoiceForm({
   locsrates: LocRateField[];
   userType: string;
 }) {
-  console.log(userType);
   const [formData, setFormData] = useState({
     userId: "",
     day_hrs_amount: "",
@@ -89,10 +88,10 @@ export default function CreateInvoiceForm({
   }, []);
 
   const userId = formData?.userId;
-  const user_site = users.find((user) => user.id === userId)?.site_name;
-  console.log("All_site-LOCS-RATES--------->", locsrates);
 
-  const locRates = locsrates.find((loc) => loc.name === user_site);
+  const user_site = users.find((user) => user.site_name === userId);
+
+  const locRates = locsrates.find((loc) => loc.name === user_site?.site_name);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
