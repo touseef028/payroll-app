@@ -28,7 +28,7 @@ export default async function Page() {
       <Form
         users={users}
         locsrates={locsrates}
-        currentUser={user}
+        currentUser={user!}
         invoices={invoices}
       />
     </main>

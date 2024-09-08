@@ -159,7 +159,10 @@ export default function EditInvoiceForm({
             </thead>
             <tbody>
               <tr className="loc-meetings-row">
-                <td>LOC Meetings</td>
+                <td>
+                  LOC Meetings
+                  <p className="text-xs">(Number of)</p>
+                </td>
                 <td>
                   <input
                     type="number"
@@ -193,7 +196,10 @@ export default function EditInvoiceForm({
                 </td>
               </tr>
               <tr className="daytime-hours-row">
-                <td>Daytime Hours</td>
+                <td>
+                  Day Rate
+                  <p className="text-xs">(Hours)</p>
+                </td>{" "}
                 <td>
                   <input
                     type="number"
@@ -203,7 +209,7 @@ export default function EditInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>Hours</td>
+                <td>Hour(s)</td>
                 <td>
                   {" "}
                   {Number(formData.day_hrs_amount) *
@@ -228,7 +234,10 @@ export default function EditInvoiceForm({
                 </td>
               </tr>
               <tr className="evening-hours-row">
-                <td>Evening Hours</td>
+                <td>
+                  Evening Rate
+                  <p className="text-xs">(Hours)</p>
+                </td>{" "}
                 <td>
                   <input
                     type="number"
@@ -238,7 +247,7 @@ export default function EditInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>Hours</td>
+                <td>Hour(s)</td>
                 <td>
                   {" "}
                   {Number(formData.eve_hrs_amount) *
@@ -263,7 +272,10 @@ export default function EditInvoiceForm({
                 </td>
               </tr>
               <tr className="admin-row">
-                <td>Admin</td>
+                <td>
+                  Admin Rate
+                  <p className="text-xs">(Hours)</p>
+                </td>{" "}
                 <td>
                   <input
                     type="number"
@@ -273,7 +285,7 @@ export default function EditInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>Hours</td>
+                <td>Hour(s)</td>
                 <td>
                   {" "}
                   {Number(formData.admin) * (Number(locRates?.adminRate) || 0)}
@@ -297,7 +309,10 @@ export default function EditInvoiceForm({
                 </td>
               </tr>
               <tr className="meeting-online-row">
-                <td>Meeting Online</td>
+                <td>
+                  Meeting Online
+                  <p className="text-xs">(Hours)</p>
+                </td>{" "}
                 <td>
                   <input
                     type="number"
@@ -307,7 +322,7 @@ export default function EditInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>Hours</td>
+                <td>Hour(s)</td>
                 <td>
                   {Number(formData.meetingOnline) *
                     (Number(locRates?.meetingRate) || 0)}
@@ -331,7 +346,10 @@ export default function EditInvoiceForm({
                 </td>
               </tr>
               <tr className="meeting-f2f-row">
-                <td>Meeting F2F</td>
+                <td>
+                  Meeting F2F
+                  <p className="text-xs">(Hours)</p>
+                </td>
                 <td>
                   <input
                     type="number"
@@ -341,7 +359,7 @@ export default function EditInvoiceForm({
                     className="w-full rounded-md border border-gray-200 py-2 pl-3"
                   />
                 </td>
-                <td>Hours</td>
+                <td>Hour(s)</td>
                 <td>
                   {Number(formData.meetingF2F) *
                     (Number(locRates?.meetingF2f) || 0)}
@@ -364,8 +382,46 @@ export default function EditInvoiceForm({
                   </button>
                 </td>
               </tr>
+              <tr className="days-row">
+                <td>
+                  Day Rate
+                  <p className="text-xs">(Days)</p>
+                </td>{" "}
+                <td>
+                  <input
+                    type="number"
+                    name="days"
+                    value={formData.days}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>Day(s)</td>
+                <td>
+                  {Number(formData.days) * (Number(locRates?.dayTimeRate) || 0)}
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    name="daysDescription"
+                    value={formData.daysDescription}
+                    onChange={handleInputChange}
+                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleRowReset("days")}
+                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
+                    ×
+                  </button>
+                </td>
+              </tr>
               <tr className="honorarium-row">
-                <td>Honorarium (Amount)</td>
+                <td>
+                  Honorarium <p className="text-xs">(Amount)</p>
+                </td>
                 <td>
                   <input
                     type="number"
@@ -397,7 +453,9 @@ export default function EditInvoiceForm({
                 </td>
               </tr>
               <tr className="others-row">
-                <td>Others (Amount)</td>
+                <td>
+                  Others <p className="text-xs">(Amount)</p>
+                </td>{" "}
                 <td>
                   <input
                     type="number"
@@ -429,42 +487,11 @@ export default function EditInvoiceForm({
                 </td>
               </tr>
 
-              <tr className="days-row">
-                <td>Days</td>
-                <td>
-                  <input
-                    type="number"
-                    name="days"
-                    value={formData.days}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
-                  />
-                </td>
-                <td>Days</td>
-
-                <td>
-                  {Number(formData.days) * (Number(locRates?.dayTimeRate) || 0)}
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    name="daysDescription"
-                    value={formData.daysDescription}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-200 py-2 pl-3"
-                  />
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    onClick={() => handleRowReset("days")}
-                    className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center">
-                    ×
-                  </button>
-                </td>
-              </tr>
               <tr className="expenses-row">
-                <td>Expenses</td>
+                <td>
+                  Expenses - (Non Taxable)
+                  <p className="text-xs">(Amount)</p>
+                </td>{" "}
                 <td>
                   <input
                     type="number"
