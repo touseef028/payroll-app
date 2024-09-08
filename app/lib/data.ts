@@ -14,7 +14,7 @@ import {
 import { formatCurrency } from "./utils";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type { User } from "@/app/lib/definitions";
+import type { Invoice, User } from "@/app/lib/definitions";
 import { auth } from "@/auth";
 const s3Client = new S3Client({
   region: process.env.AWS_REGION!,
@@ -25,17 +25,18 @@ const s3Client = new S3Client({
 });
 
 export async function fetchCurrentUser() {
-  const { user } = await auth();
+  const session = await auth();
 
-  if (!user || !user.email) {
+  if (!session || !session.user || !session.user.email) {
     return null;
   }
 
   try {
-    const dbUser = await sql`
-      SELECT id, name, email, user_type
-      FROM users
-      WHERE email = ${user.email}
+    const dbUser = await sql<UserField>`
+      SELECT users.id, users.name,  users.user_type, locs.name AS site_name
+      FROM users 
+      JOIN locs ON CAST(users.site AS INTEGER) = locs.id
+      WHERE email = ${session.user.email}
     `;
 
     return dbUser.rows[0];
@@ -44,7 +45,6 @@ export async function fetchCurrentUser() {
     throw new Error("Failed to fetch the current user.");
   }
 }
-
 export async function generatePresignedUrl(key: string) {
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_S3_BUCKET_NAME!,
@@ -262,6 +262,19 @@ export async function fetchInvoiceById(id: string) {
 //     throw new Error("Failed to fetch all users.");
 //   }
 // }
+
+export async function fetchInvoices() {
+  try {
+    const data = await sql<Invoice>`
+      SELECT * FROM invoices
+    `;
+    const invoices = data.rows;
+    return invoices;
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch all Invoices.");
+  }
+}
 
 export async function fetchUsers(query: string) {
   try {
