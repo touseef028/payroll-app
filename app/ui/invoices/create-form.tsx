@@ -33,7 +33,8 @@ export default function CreateInvoiceForm({
   invoices: Invoice[];
 }) {
   const [formData, setFormData] = useState({
-    userId: currentUser.user_type === "Staff" ? currentUser?.site_name : "",
+    month: "",
+    userId: currentUser.user_type === "Staff" ? currentUser?.id : "",
     user_site: currentUser?.user_type === "Staff" ? currentUser.site_name : "",
     day_hrs_amount: "",
     eve_hrs_amount: "",
@@ -56,8 +57,6 @@ export default function CreateInvoiceForm({
     daysDescription: "", // Add this line
     expensesDescription: "", // Add this line
   });
-
-  const [existingInvoice, setExistingInvoice] = useState(false);
 
   const [availablePeriods, setAvailablePeriods] = useState<any>([]);
 
@@ -88,12 +87,11 @@ export default function CreateInvoiceForm({
     const { name, value } = e.target;
 
     if (name === "userId") {
-      // Find the corresponding user and set their site in the formData
-      const selectedUser = users.find((user) => user.name === value);
+      const selectedUser = users.find((user) => user.id === value);
       if (selectedUser) {
         setFormData((prev) => ({
           ...prev,
-          userId: selectedUser.name,
+          userId: selectedUser.id,
           user_site: selectedUser.site_name,
         }));
       }
@@ -103,7 +101,7 @@ export default function CreateInvoiceForm({
         setFormData((prev) => ({
           ...prev,
           user_site: selectedUser.site_name,
-          userId: selectedUser.name,
+          userId: selectedUser.id,
         }));
       }
     } else {
@@ -113,8 +111,6 @@ export default function CreateInvoiceForm({
       }));
     }
   };
-
-  console.log(locRates);
 
   const calculateTotal = () => {
     const {
@@ -157,12 +153,6 @@ export default function CreateInvoiceForm({
     }));
   };
 
-  const handlePeriodsChange = (e: any) => {
-    const previousInvoicesMonth = invoices.filter(
-      (invoice) => invoice.month === e.target.value
-    );
-  };
-
   return (
     <form action={createInvoice}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
@@ -174,11 +164,11 @@ export default function CreateInvoiceForm({
             id="month"
             name="month"
             className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-            defaultValue=""
-            onChange={handlePeriodsChange}
+            value={formData?.month}
+            onChange={handleInputChange}
             required>
             <option value="" disabled>
-              Select a month
+              Select a Month
             </option>
             {availablePeriods.map((period: { id: string; period: string }) => (
               <option key={period.id} value={period.period}>
@@ -198,7 +188,7 @@ export default function CreateInvoiceForm({
               name="userId"
               disabled
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
-              <option key={currentUser?.id} value={currentUser?.id}>
+              <option key={currentUser?.id} value={currentUser?.site_name}>
                 {currentUser?.name}
               </option>
             </select>
@@ -217,9 +207,12 @@ export default function CreateInvoiceForm({
                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                 value={formData.userId}
                 onChange={handleInputChange}>
+                <option value="" disabled>
+                  Select a User
+                </option>
                 {users &&
                   users.map((user) => (
-                    <option key={user.id} value={user.name}>
+                    <option key={user.id} value={user.id}>
                       {user.name}
                     </option>
                   ))}
@@ -253,6 +246,9 @@ export default function CreateInvoiceForm({
               value={formData?.user_site}
               onChange={handleInputChange}
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
+              <option value="" disabled>
+                Select a Site
+              </option>
               {locsrates.map((locs) => (
                 <option key={locs.name} value={locs.name}>
                   {locs.name}
@@ -744,9 +740,7 @@ export default function CreateInvoiceForm({
           className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200">
           Cancel
         </Link>
-        <Button type="submit" disabled={existingInvoice}>
-          Create Invoice
-        </Button>
+        <Button type="submit">Create Invoice</Button>
       </div>
     </form>
   );

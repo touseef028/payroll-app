@@ -38,8 +38,8 @@ const FormSchema = z.object({
   others: z.coerce.number(),
   admin: z.coerce.number(),
   meetingsDescription: z.string(),
-  daytimeDescription: z.string(),
-  eveningDescription: z.string(),
+  day_hrs_amountDescription: z.string(),
+  eve_hrs_amountDescription: z.string(),
   meetingOnlineDescription: z.string(),
   meetingF2FDescription: z.string(),
   honorariumDescription: z.string(),
@@ -64,18 +64,18 @@ export async function createInvoice(formData: FormData) {
     admin,
     days,
     meetings,
-    amount,
-    status,
     month,
+
     expenses,
     adminDescription,
     meetingOnline,
     meetingF2F,
     honorarium,
+    status,
     others,
     meetingsDescription,
-    daytimeDescription,
-    eveningDescription,
+    day_hrs_amountDescription,
+    eve_hrs_amountDescription,
     meetingOnlineDescription,
     meetingF2FDescription,
     honorariumDescription,
@@ -99,8 +99,8 @@ export async function createInvoice(formData: FormData) {
     honorarium: formData.get("honorarium"),
     others: formData.get("others"),
     meetingsDescription: formData.get("meetingsDescription"),
-    daytimeDescription: formData.get("daytimeDescription"),
-    eveningDescription: formData.get("eveningDescription"),
+    day_hrs_amountDescription: formData.get("day_hrs_amountDescription"),
+    eve_hrs_amountDescription: formData.get("eve_hrs_amountDescription"),
     meetingOnlineDescription: formData.get("meetingOnlineDescription"),
     meetingF2FDescription: formData.get("meetingF2FDescription"),
     honorariumDescription: formData.get("honorariumDescription"),
@@ -153,13 +153,13 @@ export async function createInvoice(formData: FormData) {
   }
 
   const existingInvoice = await sql`
-    SELECT i.id
-    FROM invoices i
-    JOIN users u ON i.user_id = u.id
-    WHERE i.user_id = ${userId}
-    AND u.user_type = 'Staff'
+  SELECT i.id, i.month, i.amount
+  FROM invoices i
+  JOIN users u ON i.user_id = u.id
+  WHERE i.user_id = ${userId}
+  AND i.month = ${month}
+
   `;
-  // console.log("existingInvoice---->", existingInvoice);
 
   if (existingInvoice.rows.length > 0) {
     throw new Error("Staff members can only create one invoice per month");
@@ -169,7 +169,7 @@ export async function createInvoice(formData: FormData) {
     await sql`
       INSERT INTO invoices (user_id, amount, day_hrs_amount, eve_hrs_amount, days, meetings, status, date, expenses, receipt_url, admin_description
      , meeting_online, meeting_f2f, honorarium, others, meetings_description, daytime_description, evening_description, meeting_online_description, meeting_f2f_description, honorarium_description, others_description, days_description, expenses_description, admin, month)
-      VALUES (${userId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl}, ${adminDescription}, ${meetingOnlineCents}, ${meetingF2FCents}, ${honorariumCents}, ${othersCents}, ${meetingsDescription}, ${daytimeDescription}, ${eveningDescription}, ${meetingOnlineDescription}, ${meetingF2FDescription}, ${honorariumDescription}, ${othersDescription}, ${daysDescription}, ${expensesDescription}, ${adminCents}, ${month})
+      VALUES (${userId}, ${amountInCents}, ${day_hrs_amountInCents}, ${eve_hrs_amountInCents}, ${daysInCents}, ${meetingsInCents}, ${status}, ${date}, ${expensesInCents}, ${receiptUrl}, ${adminDescription}, ${meetingOnlineCents}, ${meetingF2FCents}, ${honorariumCents}, ${othersCents}, ${meetingsDescription}, ${day_hrs_amountDescription}, ${eve_hrs_amountDescription}, ${meetingOnlineDescription}, ${meetingF2FDescription}, ${honorariumDescription}, ${othersDescription}, ${daysDescription}, ${expensesDescription}, ${adminCents}, ${month})
     `;
     console.log("success");
   } catch (error) {
@@ -181,7 +181,8 @@ export async function createInvoice(formData: FormData) {
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
-}const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+}
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function updateInvoice(id: string, formData: FormData) {
   // console.log("formData---->", formData);
@@ -440,9 +441,7 @@ export async function deleteUser(id: string) {
 
 // creating actions for Inovices lisst page
 
-export async function approveAllInvoices(
-  month: string
-) {
+export async function approveAllInvoices(month: string) {
   // const { user } = await auth();
   // if (user?.user_type !== 'Manager') {
   //   throw new Error('Not authorized to approve invoices');
