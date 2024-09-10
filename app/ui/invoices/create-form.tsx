@@ -33,7 +33,8 @@ export default function CreateInvoiceForm({
   invoices: Invoice[];
 }) {
   const [formData, setFormData] = useState({
-    userId: currentUser?.site_name,
+    userId: currentUser.user_type === "Staff" ? currentUser?.site_name : "",
+    user_site: currentUser?.user_type === "Staff" ? currentUser.site_name : "",
     day_hrs_amount: "",
     eve_hrs_amount: "",
     days: "",
@@ -77,9 +78,7 @@ export default function CreateInvoiceForm({
     fetchPeriods();
   }, []);
 
-  const userId = formData?.userId;
-
-  const user_site = users.find((user) => user.site_name === userId);
+  const user_site = users.find((user) => user.site_name === formData.user_site);
 
   const locRates = locsrates.find((loc) => loc.name === user_site?.site_name);
 
@@ -88,14 +87,34 @@ export default function CreateInvoiceForm({
   ) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "userId" || name.endsWith("Description")
-          ? value
-          : parseFloat(value) || 0,
-    }));
+    if (name === "userId") {
+      // Find the corresponding user and set their site in the formData
+      const selectedUser = users.find((user) => user.name === value);
+      if (selectedUser) {
+        setFormData((prev) => ({
+          ...prev,
+          userId: selectedUser.name,
+          user_site: selectedUser.site_name,
+        }));
+      }
+    } else if (name === "user_site") {
+      const selectedUser = users.find((user) => user.site_name === value);
+      if (selectedUser) {
+        setFormData((prev) => ({
+          ...prev,
+          user_site: selectedUser.site_name,
+          userId: selectedUser.name,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: parseFloat(value) || value,
+      }));
+    }
   };
+
+  console.log(locRates);
 
   const calculateTotal = () => {
     const {
@@ -169,34 +188,79 @@ export default function CreateInvoiceForm({
           </select>
         </div>
         {/* User Name */}
-        <div className="mb-4">
-          <label htmlFor="month" className="mb-2 block text-sm font-medium">
-            Hello
-          </label>
-          <select
-            id="user"
-            name="userId"
-            disabled
-            className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
-            <option key={currentUser?.id} value={currentUser?.id}>
-              {currentUser?.name}
-            </option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="month" className="mb-2 block text-sm font-medium">
-            Site Name
-          </label>
-          <select
-            id="user"
-            name="user_site"
-            disabled
-            className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
-            <option key={currentUser?.id} value={currentUser?.site_name}>
-              {currentUser?.site_name}
-            </option>
-          </select>
-        </div>
+        {currentUser.user_type === "Staff" ? (
+          <div className="mb-4">
+            <label htmlFor="month" className="mb-2 block text-sm font-medium">
+              Hello
+            </label>
+            <select
+              id="user"
+              name="userId"
+              disabled
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
+              <option key={currentUser?.id} value={currentUser?.id}>
+                {currentUser?.name}
+              </option>
+            </select>
+          </div>
+        ) : (
+          <div className="mb-4">
+            <label
+              htmlFor="employee"
+              className="mb-2 block text-sm font-medium">
+              Choose User
+            </label>
+            <div className="relative">
+              <select
+                id="user"
+                name="userId"
+                className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                value={formData.userId}
+                onChange={handleInputChange}>
+                {users &&
+                  users.map((user) => (
+                    <option key={user.id} value={user.name}>
+                      {user.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+        )}
+        {currentUser.user_type === "Staff" ? (
+          <div className="mb-4">
+            <label htmlFor="month" className="mb-2 block text-sm font-medium">
+              Site Name
+            </label>
+            <select
+              id="user"
+              name="user_site"
+              disabled
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
+              <option key={currentUser?.id} value={currentUser?.site_name}>
+                {currentUser?.site_name}
+              </option>
+            </select>
+          </div>
+        ) : (
+          <div className="mb-4">
+            <label htmlFor="month" className="mb-2 block text-sm font-medium">
+              Site Name
+            </label>
+            <select
+              id="user"
+              name="user_site"
+              value={formData?.user_site}
+              onChange={handleInputChange}
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
+              {locsrates.map((locs) => (
+                <option key={locs.name} value={locs.name}>
+                  {locs.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="mt-6 border rounded-md p-4">
           <table className="w-full">
             <thead>
