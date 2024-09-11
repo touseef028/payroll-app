@@ -187,15 +187,11 @@ export default function CreateInvoiceForm({
             <label htmlFor="month" className="mb-2 block text-sm font-medium">
               Welcome
             </label>
-            <select
+            <span
               id="user"
-              name="userId"
-              disabled
-              className="peer block w-full cursor-not-allowed rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
-              <option value={currentUser?.site_name} disabled selected hidden>
-                {currentUser?.name}
-              </option>
-            </select>
+              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
+              {currentUser?.name}
+            </span>
           </div>
         ) : (
           <div className="mb-4">
@@ -229,15 +225,11 @@ export default function CreateInvoiceForm({
             <label htmlFor="month" className="mb-2 block text-sm font-medium">
               Site Name
             </label>
-            <select
+            <span
               id="user"
-              name="user_site"
-              disabled
-              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
-              <option key={currentUser?.id} value={currentUser?.site_name}>
-                {currentUser?.site_name}
-              </option>
-            </select>
+              className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
+              {currentUser?.site_name}
+            </span>
           </div>
         ) : (
           <div className="mb-4">
