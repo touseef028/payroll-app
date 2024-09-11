@@ -34,8 +34,12 @@ export default function CreateInvoiceForm({
 }) {
   const [formData, setFormData] = useState({
     month: "",
-    userId: currentUser.user_type === "Staff" ? currentUser?.id : "",
-    user_site: currentUser?.user_type === "Staff" ? currentUser.site_name : "",
+    userId:
+      currentUser.user_type === "Staff" ? currentUser?.id : currentUser.id,
+    user_site:
+      currentUser?.user_type === "Staff"
+        ? currentUser.site_name
+        : currentUser.site_name,
     day_hrs_amount: "",
     eve_hrs_amount: "",
     days: "",
@@ -181,14 +185,14 @@ export default function CreateInvoiceForm({
         {currentUser.user_type === "Staff" ? (
           <div className="mb-4">
             <label htmlFor="month" className="mb-2 block text-sm font-medium">
-              Hello
+              Welcome
             </label>
             <select
               id="user"
               name="userId"
               disabled
-              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
-              <option key={currentUser?.id} value={currentUser?.site_name}>
+              className="peer block w-full cursor-not-allowed rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500">
+              <option value={currentUser?.site_name} disabled selected hidden>
                 {currentUser?.name}
               </option>
             </select>
