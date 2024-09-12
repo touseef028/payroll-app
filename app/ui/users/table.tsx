@@ -3,6 +3,7 @@ import { UpdateUser, DeleteUser } from "@/app/ui/users/buttons";
 import { formatDateToLocal } from "@/app/lib/utils";
 import Search from "../search";
 import { lusitana } from "../fonts";
+import { fetchFilteredLocs } from "@/app/lib/data";
 
 export default function UsersTable({
   users,
@@ -12,9 +13,9 @@ export default function UsersTable({
     id: string;
     name: string;
     email: string;
-    date_of_birth: string;
     phone_number: string;
-    site: string;
+    site_name: string;
+    date_of_birth: string;
   }>;
 }) {
   return (
@@ -53,8 +54,7 @@ export default function UsersTable({
                 {users?.map((user) => (
                   <tr
                     key={user.id}
-                    className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
-                  >
+                    className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg">
                     {" "}
                     <td className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex items-center gap-3">
@@ -65,14 +65,16 @@ export default function UsersTable({
                       {user.email}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
-                      {user.date_of_birth
-                        ? formatDateToLocal(user.date_of_birth)
+                      {user?.date_of_birth
+                        ? formatDateToLocal(user?.date_of_birth)
                         : "Not provided"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {user.phone_number}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3">{user.site}</td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {user.site_name}
+                    </td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {user.user_type}
                     </td>

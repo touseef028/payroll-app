@@ -7,13 +7,15 @@ import {
   LatestInvoiceRaw,
   Settings,
   Revenue,
-  User,
   UserField,
+  Loc,
+  LocField,
 } from "./definitions";
 import { formatCurrency } from "./utils";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
+import type { Invoice, User } from "@/app/lib/definitions";
+import { auth } from "@/auth";
 const s3Client = new S3Client({
   region: process.env.AWS_REGION!,
   credentials: {
@@ -22,6 +24,27 @@ const s3Client = new S3Client({
   },
 });
 
+export async function fetchCurrentUser() {
+  const session = await auth();
+
+  if (!session || !session.user || !session.user.email) {
+    return null;
+  }
+
+  try {
+    const dbUser = await sql<UserField>`
+      SELECT users.id, users.name,  users.user_type, locs.name AS site_name
+      FROM users 
+      JOIN locs ON CAST(users.site AS INTEGER) = locs.id
+      WHERE email = ${session.user.email}
+    `;
+
+    return dbUser.rows[0];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch the current user.");
+  }
+}
 export async function generatePresignedUrl(key: string) {
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_S3_BUCKET_NAME!,
@@ -29,7 +52,7 @@ export async function generatePresignedUrl(key: string) {
   });
   try {
     const result = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-    console.log("Generated presigned URL:", result);
+    // console.log("Generated presigned URL:", result);
     return result;
   } catch (error) {
     console.error("Failed to generate presigned URL:", error);
@@ -62,7 +85,6 @@ export async function fetchLatestInvoices() {
       SELECT invoices.amount, users.name, users.email, invoices.id
       FROM invoices
       JOIN users ON invoices.user_id = users.id
-      ORDER BY invoices.date DESC
       LIMIT 5`;
 
     const latestInvoices = data.rows.map((invoice) => ({
@@ -114,40 +136,61 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 10;
 export async function fetchFilteredInvoices(
   query: string,
-  currentPage: number
+  currentPage: number,
+  month: string
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-
+  console.log("invocies month----.", month);
   try {
     const invoices = await sql<InvoicesTable>`
       SELECT
         invoices.id,
         invoices.amount,
-        invoices.date,
         invoices.status,
         invoices.expenses,
+        invoices.month,
         users.name,
         users.email
       FROM invoices
       JOIN users ON invoices.user_id = users.id
       WHERE
-        users.name ILIKE ${`%${query}%`} OR
+        (users.name ILIKE ${`%${query}%`} OR
         users.email ILIKE ${`%${query}%`} OR
         invoices.amount::text ILIKE ${`%${query}%`} OR
         invoices.expenses::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
+        invoices.status ILIKE ${`%${query}%`})
+        AND invoices.month = ${month}
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
-
+    console.log("invocies----.", invoices.rows);
     return invoices.rows;
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch invoices.");
+  }
+}
+
+export async function fetchMonthlyInvoiceStatus(month: string) {
+  try {
+    const result = await sql`
+      SELECT
+        CASE
+          WHEN COUNT(*) FILTER (WHERE status = 'pending') > 0 THEN 'In Progress'
+          WHEN COUNT(*) FILTER (WHERE status = 'approved') > 0
+              AND COUNT(*) FILTER (WHERE status IN ('pending', 'rejected')) = 0 THEN 'APPROVED'
+          WHEN COUNT(*) FILTER (WHERE status = 'rejected') > 0 THEN 'In Progress'
+          ELSE 'SUBMITTED'
+        END AS overall_status
+      FROM invoices
+      WHERE month = ${month}
+    `;
+    return result.rows[0].overall_status;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch monthly invoice status.");
   }
 }
 
@@ -161,7 +204,6 @@ export async function fetchInvoicesPages(query: string) {
       users.email ILIKE ${`%${query}%`} OR
       invoices.amount::text ILIKE ${`%${query}%`} OR
       invoices.expenses::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
       invoices.status ILIKE ${`%${query}%`}
   `;
 
@@ -177,16 +219,7 @@ export async function fetchInvoiceById(id: string) {
   try {
     const data = await sql<InvoiceForm>`
       SELECT
-        invoices.id,
-        invoices.user_id,
-        invoices.amount,
-        invoices.status,
-        invoices.day_hrs_amount,
-        invoices.eve_hrs_amount,
-        invoices.days,
-        invoices.meetings,
-        invoices.expenses,
-        invoices.receipt_url
+       *
       FROM invoices
       WHERE invoices.id = ${id};
     `;
@@ -230,16 +263,31 @@ export async function fetchInvoiceById(id: string) {
 //   }
 // }
 
+export async function fetchInvoices() {
+  try {
+    const data = await sql<Invoice>`
+      SELECT * FROM invoices
+    `;
+    const invoices = data.rows;
+    return invoices;
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch all Invoices.");
+  }
+}
+
 export async function fetchUsers(query: string) {
   try {
     const data = await sql<UserField>`
       SELECT
-        id,
-        name
+        users.id,
+        users.name, 
+        users.user_type,
+        locs.name AS site_name
       FROM users
+      LEFT JOIN locs ON CAST(users.site AS INTEGER) = locs.id
       ORDER BY name ASC
     `;
-
     const users = data.rows;
     return users;
   } catch (err) {
@@ -302,17 +350,56 @@ export async function fetchSettings(): Promise<Settings | null> {
   }
 }
 
+// export async function fetchFilteredUsers(query: string, currentPage: number) {
+//   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+//   try {
+//     const users = await sql<User>`
+//       SELECT
+//         users.id,
+//         users.name,
+//         users.email,
+//         users.date_of_birth,
+//         users.phone_number,
+//         users.user_type
+//       FROM users
+//       WHERE
+//         users.name ILIKE ${`%${query}%`} OR
+//         users.email ILIKE ${`%${query}%`} OR
+//         users.phone_number ILIKE ${`%${query}%`} OR
+//         users.user_type ILIKE ${`%${query}%`}
+//       ORDER BY users.name ASC
+//       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+//     `;
+//     return users.rows;
+//   } catch (error) {
+//     console.error("Database Error:", error);
+//     throw new Error("Failed to fetch users.");
+//   }
+// }
+
 export async function fetchFilteredUsers(query: string, currentPage: number) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
     const users = await sql<User>`
-      SELECT *
+      SELECT
+        users.id,
+        users.name,
+        users.email,
+        users.date_of_birth,
+        users.phone_number,
+        users.user_type,
+        locs.name AS site_name
       FROM users
+      LEFT JOIN locs ON CAST(users.site AS INTEGER) = locs.id
       WHERE
-        name ILIKE ${`%${query}%`} OR
-        email ILIKE ${`%${query}%`}
-      ORDER BY name ASC
+        users.name ILIKE ${`%${query}%`} OR
+        users.email ILIKE ${`%${query}%`} OR
+        users.phone_number ILIKE ${`%${query}%`} OR
+        users.user_type ILIKE ${`%${query}%`} OR
+        locs.name ILIKE ${`%${query}%`}
+      ORDER BY users.name ASC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
     return users.rows;
@@ -322,7 +409,7 @@ export async function fetchFilteredUsers(query: string, currentPage: number) {
   }
 }
 
-export async function fetchUserById(id:string) {
+export async function fetchUserById(id: string) {
   try {
     const users = await sql<User>`
       SELECT *
@@ -330,10 +417,119 @@ export async function fetchUserById(id:string) {
       WHERE
        id= ${id}
     `;
-    return users.rows?.length? users.rows[0]:null;
+    return users.rows?.length ? users.rows[0] : null;
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch users.");
   }
 }
 
+export async function checkExistingInvoice() {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
+  const existingInvoice = await sql`
+    SELECT id
+    FROM invoices
+    WHERE user_id = ${userId}
+    AND (SELECT user_type FROM users WHERE id = ${userId}) = 'Staff'
+    AND DATE_TRUNC('month', date) = DATE_TRUNC('month', CURRENT_DATE)
+  `;
+  return existingInvoice.rows.length > 0;
+}
+
+// -------------- LOCS --------------
+
+export async function fetchFilteredLocs(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const locs = await sql<Loc>`
+      SELECT
+        locs.id,
+        locs.name,
+        locs.address,
+        locs.loc_meeting_rate,
+        locs.day_time_rate,
+        locs.eve_rate,
+        locs.day_rate,
+        locs.meeting_rate,
+        locs.admin_rate,
+        locs.meeting_f2f,
+        locs.status,
+        locs.inactive_date
+      FROM locs
+      WHERE
+        locs.name ILIKE ${`%${query}%`} OR
+        locs.address ILIKE ${`%${query}%`} OR
+        locs.status ILIKE ${`%${query}%`}
+      ORDER BY locs.name ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+    return locs.rows;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch LOCs.");
+  }
+}
+
+export async function fetchLocById(id: string) {
+  try {
+    const locs = await sql<Loc>`
+      SELECT *
+      FROM locs
+      WHERE
+       id= ${id}
+    `;
+    return locs.rows?.length ? locs.rows[0] : null;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to locs.");
+  }
+}
+export async function fetchLocsRates() {
+  try {
+    const data = await sql<Loc>`
+      SELECT name, day_time_rate, eve_rate, day_rate, meeting_rate, admin_rate, meeting_f2f, loc_meeting_rate
+      FROM locs 
+      WHERE status = 'active'
+    `;
+
+    return data.rows.map((loc) => ({
+      name: loc.name,
+      dayTimeRate: loc.day_time_rate,
+      eveRate: loc.eve_rate,
+      dayRate: loc.day_rate,
+      meetingRate: loc.meeting_rate,
+      adminRate: loc.admin_rate,
+      meetingF2f: loc.meeting_f2f,
+      locMeetingRate: loc.loc_meeting_rate,
+    }));
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch LOC rates.");
+  }
+}
+
+export async function fetchLocs(query: string) {
+  try {
+    const data = await sql<LocField>`
+      SELECT
+        id,
+        name
+      FROM locs
+      WHERE status = 'active'
+      ORDER BY name ASC
+    `;
+
+    const locs = data.rows;
+    return locs;
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch all locs.");
+  }
+}

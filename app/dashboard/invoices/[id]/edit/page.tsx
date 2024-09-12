@@ -1,22 +1,28 @@
 import Form from "@/app/ui/invoices/edit-form";
 import Breadcrumbs from "@/app/ui/invoices/breadcrumbs";
-import { fetchInvoiceById, fetchUsers, fetchSettings, generatePresignedUrl } from "@/app/lib/data";
+import {
+  fetchInvoiceById,
+  fetchUsers,
+  fetchSettings,
+  generatePresignedUrl,
+  fetchLocsRates,
+} from "@/app/lib/data";
 import { notFound } from "next/navigation";
-
 
 export default async function Page({ params }: { params: { id: string } }) {
   const id = params.id;
-  const [invoice, users, settings] = await Promise.all([
+  const [invoice, users, settings, locsrates] = await Promise.all([
     fetchInvoiceById(id),
-    fetchUsers(''),
+    fetchUsers(""),
     fetchSettings(),
+    fetchLocsRates(),
   ]);
 
   if (!invoice) {
     notFound();
   }
 
-  let presignedUrl = '';
+  let presignedUrl = "";
   if (invoice.receipt_url) {
     presignedUrl = await generatePresignedUrl(invoice.receipt_url);
   }
@@ -33,7 +39,12 @@ export default async function Page({ params }: { params: { id: string } }) {
           },
         ]}
       />
-      <Form invoice={{ ...invoice, presignedUrl }} users={users} settings={settings} />
+      <Form
+        invoice={{ ...invoice, presignedUrl }}
+        users={users}
+        settings={settings}
+        locsrates={locsrates}
+      />
     </main>
   );
 }
